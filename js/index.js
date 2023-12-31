@@ -37,7 +37,7 @@ function convertirJSON(value_ss, output_string) {
 
 function corregirFormato(jsonString) {
     const lastTwoChars = jsonString.slice(-2);
-    const invalidLastChars = ['";', '];', '};'];
+    const invalidLastChars = ['";', '];', '};', '},'];
 
     if (invalidLastChars.includes(lastTwoChars)) {
         jsonString = jsonString.slice(0, -1);
