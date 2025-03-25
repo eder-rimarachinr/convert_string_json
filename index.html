@@ -1,52 +1,56 @@
 <!DOCTYPE html>
 <html lang="es">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>JSON String to JSON Converter</title>
     <link rel="stylesheet" href="./css/index.css" />
-</head>
+    <link rel="icon" type="image/png" href="./assets/favicon.ico" />
+  </head>
 
-<body>
+  <body>
     <main id="app" class="container">
-        <div class="row">
-            <h1>CONVERT STRING TO JSON</h1>
-        </div>
-        <div class="row">
-            <section id="div_input_string">
-                <div class="form_inp">
-                    <div class="lable_inp">
-                        <label for="input_string">INPUT</label>
-                        <i onclick="copyInp(); return false;" class="gg-copy"></i>
-                    </div>
-                    <textarea id="input_string" cols="30" rows="10" placeholder="Enter a json string"></textarea>
-                </div>
-            </section>
+      <div class="row">
+        <h1 class="title_page">JSON String to JSON Converter</h1>
+      </div>
 
-            <section id="div_output_json">
-                <div class="form_out">
-                    <div class="lable_out">
-                        <label for="output_json">OUTPUT</label>
-                        <i onclick="copyOut(); return false;" class="gg-copy"></i>
-                    </div>
-                    <pre name="output" id="output_json"></pre>
-                </div>
-            </section>
-        </div>
-        <br />
-        <br />
-        <!-- Nueva fila para el botón -->
-        <div class="row">
-            <div class="col-12">
-                <div class="d-flex justify-content-center">
-                    <input type="button" value="Convertir" id="btn_convertir" class="btn btn-primary" />
-                </div>
+      <div class="row">
+        <section id="div_input_string">
+          <div class="form_inp">
+            <div class="lable_inp">
+              <label for="input_string">INPUT</label>
+              <i id="copy_input" class="gg-copy"></i>
             </div>
-        </div>
+            <textarea id="input_string" placeholder="Enter a json string">
+            </textarea>
+          </div>
+
+          <div class="bttn_convert">
+            <button
+              type="button"
+              value="Convertir"
+              id="btn_convertir"
+              class="btn btn-primary"
+            >
+              Converter
+            </button>
+          </div>
+        </section>
+
+        <section id="div_output_json">
+          <div class="form_out">
+            <div class="lable_out">
+              <label for="output_json">OUTPUT</label>
+              <i id="copy_output" class="gg-copy"></i>
+            </div>
+            <pre name="output" id="output_json"></pre>
+          </div>
+        </section>
+      </div>
     </main>
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script type="text/javascript" src="./js/index.js"></script>
-</body>
-
+  </body>
 </html>
