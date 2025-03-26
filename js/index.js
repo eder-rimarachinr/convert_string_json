@@ -52,97 +52,12 @@ $(document).ready(function () {
         return jsonString;
     }
 
-    function syntaxHighlight(json) {
-        let depth = 0; // Control de la profundidad de anidación
-
-        // Función para generar clases únicas en base a la profundidad
-        function getNestedClass(depth) {
-            return `nested-depth-${depth}`;
-        }
-
-        // Escapar caracteres especiales
-        const escapedJSON = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-        // Resaltar claves y valores
-        let highlightedJSON = escapedJSON.replace(
-            /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-            function (match) {
-                const cls = /^"/.test(match)
-                    ? /:$/.test(match)
-                        ? "key"
-                        : "string"
-                    : /true|false/.test(match)
-                        ? "boolean"
-                        : /null/.test(match)
-                            ? "null"
-                            : "number";
-                return `<span class="${cls}">${match}</span>`;
-            }
-        );
-
-        // Añadir clases y contenedores de apertura para objetos y arreglos
-        highlightedJSON = highlightedJSON.replace(
-            /(\{|\[)/g, // Detectar apertura
-            function (match) {
-                depth++;
-                const nestedClass = getNestedClass(depth);
-                return `<span class="toggle-container">
-                            <span class="toggle">▶</span> <span> ${match} </span>
-                            <div class="${nestedClass} nested-content" style="display:block;">`;
-            }
-        );
-
-        // Añadir clases y contenedores de cierre para objetos y arreglos
-        highlightedJSON = highlightedJSON.replace(
-            /(\}|\])/g, // Detectar cierre
-            function (match) {
-                const nestedClass = getNestedClass(depth);
-                depth--;
-                return `</div><span class="${nestedClass}" style="display:block;">${match}</span>`;
-            }
-        );
-
-        // Envolver las comas
-        highlightedJSON = highlightedJSON.replace(
-            /,/g, // Detectar comas
-            function () {
-                return `<span class="comma">,</span>`;
-            }
-        );
-
-        return highlightedJSON;
-    }
-
-    
-    $(document).on("click", ".toggle", function () {
-        const container = $(this).closest(".toggle-container"); // Encuentra el contenedor raíz
-        const nestedContent = container.find("> .nested-content"); // Encuentra el contenido interno
-
-        // Alternar visibilidad con lógica ajustada
-        if (nestedContent.css("display") === "none") {
-            nestedContent.css("display", "block"); // Mostrar contenido interno
-            $(this).text("▼"); // Cambiar el ícono a colapsar
-        } else {
-            nestedContent.css("display", "none"); // Ocultar contenido interno
-            $(this).text("▶"); // Cambiar el ícono a expandir
-        }
-    });
-
-
-
     // function syntaxHighlight(json) {
-    //     let depth = 0; // Variable para controlar la profundidad de la anidación
-
-    //     // Función para agregar clases únicas en contenedores `nested`
-    //     function getNestedClass(depth) {
-    //         return `nested-depth-${depth}`;
-    //     }
-
     //     // Escapar los caracteres especiales para evitar inyecciones
     //     const escapedJSON = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
     //     // Resaltar las claves y valores según el tipo
-    //     let highlightedJSON = escapedJSON.replace(
+    //     return escapedJSON.replace(
     //         /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
     //         function (match) {
     //             const cls = /^"/.test(match)
@@ -154,83 +69,119 @@ $(document).ready(function () {
     //                     : /null/.test(match)
     //                         ? "null"
     //                         : "number";
-
-    //             // Agregar un span para la clave y valor con clases de color
     //             return `<span class="${cls}">${match}</span>`;
     //         }
     //     );
+    // }
 
-    //     // Ahora añadimos la interactividad a las claves
-    //     highlightedJSON = highlightedJSON.replace(
-    //         /"([^"]+)":/g, // Buscar las claves en los objetos
-    //         function (match, p1) {
-    //             return `<span class="toggle-key" data-key="${p1}">${match}</span>`;
-    //         }
-    //     );
 
-    //     // Agregar los íconos de expandir/colapsar en los objetos y arrays
-    //     highlightedJSON = highlightedJSON.replace(
-    //         /(\{|\[)/g, // Detecta la apertura de objetos o arrays
+
+    // function syntaxHighlight(json) {
+    //     let depth = 0; // Control de la profundidad de anidación
+
+    //     // Función para generar clases únicas en base a la profundidad
+    //     function getNestedClass(depth) {
+    //         return `nested-depth-${depth}`;
+    //     }
+
+    //     // Escapar caracteres especiales
+    //     const escapedJSON = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    //     // Resaltar claves, valores y manejar aperturas/cierres de objetos/arreglos
+    //     let highlightedJSON = escapedJSON.replace(
+    //         /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?|[\{\[]|[\}\]])/g,
     //         function (match) {
-    //             depth++; // Aumentar la profundidad con cada apertura de objeto/array
-    //             const nestedClass = getNestedClass(depth); // Obtener una clase única para el contenedor
-    //             return `<span class="toggle-container"><span class="toggle">▶</span>${match}<span class="toggle-container ${nestedClass}" style="display:none;"></span></span>`;
+    //             if (/[\{\[]/.test(match)) {
+    //                 // Detectar apertura de objeto o arreglo
+    //                 const nestedClass = getNestedClass(depth);
+    //                 const icon = `<span class="toggle">▶</span>`;
+    //                 depth++;
+    //                 return `<span class="toggle-container">${icon} <span class="${nestedClass}">${match}</span>
+    //                             <div class="${nestedClass} nested-content" style="display:block;">`;
+    //             } else if (/[\}\]]/.test(match)) {
+    //                 // Detectar cierre de objeto o arreglo
+    //                 depth--;
+    //                 const nestedClass = getNestedClass(depth);
+    //                 return `</div><span class="${nestedClass}">${match}</span></span>`;
+    //             } else {
+    //                 // Resaltar claves y valores
+    //                 const cls = /^"/.test(match)
+    //                     ? /:$/.test(match)
+    //                         ? "key"
+    //                         : "string"
+    //                     : /true|false/.test(match)
+    //                         ? "boolean"
+    //                         : /null/.test(match)
+    //                             ? "null"
+    //                             : "number";
+    //                 return `<span class="${cls}">${match}</span>`;
+    //             }
     //         }
     //     );
 
-    //     // Envolver las comas dentro de un span con clase 'comma'
+    //     // Añadir las clases para las comas
     //     highlightedJSON = highlightedJSON.replace(
-    //         /,/g, // Busca todas las comas en el JSON
-    //         function () {
+    //         /,/g, function () {
     //             return `<span class="comma">,</span>`;
-    //         }
-    //     );
-
-    //     // Agregar el cierre adecuado para los objetos y arrays
-    //     highlightedJSON = highlightedJSON.replace(
-    //         /(\}|\])/g, // Detecta el cierre de objetos o arrays
-    //         function (match) {
-    //             const nestedClass = getNestedClass(depth); // Obtener una clase única para el contenedor
-    //             depth--; // Reducir la profundidad al cerrar un objeto/array
-    //             return `${match} <span class="toggle-container ${nestedClass}" style="display:none;"></span>`;
     //         }
     //     );
 
     //     return highlightedJSON;
     // }
 
+
     // $(document).on("click", ".toggle", function () {
     //     const container = $(this).closest(".toggle-container"); // Encuentra el contenedor raíz
-    //     const nestedClass = container.find(".toggle-container").last().attr("class").split(" ")[1]; // Obtener la clase única
-    //     console.log({ nestedClass });
+    //     const nestedContent = container.find("> .nested-content"); // Encuentra el contenido interno
 
-    //     const nextContainer = container.nextAll(`.${nestedClass}`).first(); // Buscar el siguiente contenedor con la misma clase
-
-    //     if (nextContainer.length) {
-    //         // Verificar si el contenedor está visible o no
-    //         const isVisible = !nextContainer.hasClass("hidden");
-
-    //         // Mostrar u ocultar todos los elementos entre toggle-container y nextContainer
-    //         let currentElement = container.next(); // Comenzar desde el siguiente elemento
-    //         while (currentElement.length && currentElement[0] !== nextContainer[0]) {
-    //             if (isVisible) {
-    //                 currentElement.addClass("hidden"); // Ocultar cada elemento
-    //             } else {
-    //                 currentElement.removeClass("hidden"); // Mostrar cada elemento
-    //             }
-    //             currentElement = currentElement.next(); // Avanzar al siguiente elemento
-    //         }
-
-    //         // Cambiar el estado del último contenedor
-    //         if (isVisible) {
-    //             nextContainer.addClass("hidden"); // Ocultar el último contenedor
-    //             $(this).text("▶"); // Cambiar el ícono a expandir
-    //         } else {
-    //             nextContainer.removeClass("hidden"); // Mostrar el último contenedor
-    //             $(this).text("▼"); // Cambiar el ícono a colapsar
-    //         }
+    //     // Alternar visibilidad con lógica ajustada
+    //     if (nestedContent.css("display") === "none") {
+    //         nestedContent.css("display", "block"); // Mostrar contenido interno
+    //         $(this).text("▼"); // Cambiar el ícono a colapsar
+    //     } else {
+    //         nestedContent.css("display", "none"); // Ocultar contenido interno
+    //         $(this).text("▶"); // Cambiar el ícono a expandir
     //     }
     // });
+
+
+    function syntaxHighlight(json) {
+        // Escapar los caracteres especiales para evitar inyecciones
+        const escapedJSON = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+        let result = ""; // Acumulador para el JSON resaltado con numeración
+
+        // Dividir el JSON por líneas para procesar cada línea
+        const lines = escapedJSON.split(/\n/);
+        lines.forEach((line, index) => {
+            // Añadir la numeración como primer carácter de la línea
+            const lineNumber = `<span class="line-number">${index + 1}</span> `;
+
+            // Resaltar claves y valores según el tipo
+            const highlightedLine = line.replace(
+                /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+                function (match) {
+                    const cls = /^"/.test(match)
+                        ? /:$/.test(match)
+                            ? "key"
+                            : "string"
+                        : /true|false/.test(match)
+                            ? "boolean"
+                            : /null/.test(match)
+                                ? "null"
+                                : "number";
+                    return `<span class="${cls}">${match}</span>`;
+                }
+            );
+
+            // Combinar la numeración con la línea resaltada
+            result += lineNumber + highlightedLine + "<br />"; // Añadir salto de línea
+        });
+
+        return result; // Retornar el JSON resaltado con numeración
+    }
+
+
 
 
     $("#copy_input").on("click", function () {

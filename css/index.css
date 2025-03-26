@@ -346,21 +346,24 @@ textarea {
 }
 
 .toggle-container {
-  display: grid;
+  display: contents;
+  justify-content: space-between;
+  flex-direction: column;
   /* Permitir alineación en una línea */
-  align-items: center;
+  align-items: start;
   /* Alinear íconos y llaves verticalmente */
-  margin-left: 0;
   /* Sin sangría inicial */
 }
+
 .nested-content {
-    display: block;
-    margin-left: 10px;
-    padding-left: 0;
-    position: relative;
-    top: -15px;
-    margin-bottom: 0;
-    line-height: 1; /* Reduce el espacio vertical */
+  display: block;
+  margin-left: 10px;
+  padding-left: 0;
+  position: relative;
+  top: -15px;
+  margin-bottom: 0;
+  line-height: 1;
+  /* Reduce el espacio vertical */
 }
 
 
