@@ -345,6 +345,39 @@ textarea {
   cursor: pointer;
 }
 
+.line-number {
+  display: inline-block;
+  min-width: 50px;
+  width: 60px;
+  font-size: 14px;
+  color: gray;
+  background-color: #f4f4f4;
+  border-right: 1px solid #007BFF;
+  justify-content: space-evenly;
+  padding: 0 5px;
+  box-sizing: border-box;
+}
+
+.toggle {
+  cursor: pointer;
+  color: #007BFF;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.nested-depth-1 {
+  margin-left: 20px;
+}
+
+.nested-depth-2 {
+  margin-left: 40px;
+}
+
+.nested-depth-3 {
+  margin-left: 60px;
+}
+
+
 .toggle-container {
   display: contents;
   justify-content: space-between;
@@ -406,5 +439,4 @@ textarea {
 
 .hidden {
   display: none;
-  /* Ocultar completamente los elementos internos */
 }

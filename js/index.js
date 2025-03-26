@@ -1,6 +1,8 @@
 $(document).ready(function () {
     const inputString = $("#input_string");
 
+    let jsnFina = null;
+
     inputString.empty();
 
     listenClickBtnConverter();
@@ -33,7 +35,7 @@ $(document).ready(function () {
 
             const parsedJSON = JSON.parse(value);
             let formattedJSON = JSON.stringify(parsedJSON, null, 4);
-
+            jsnFina = formattedJSON;
             outputString.html(syntaxHighlight(formattedJSON));
         } catch (error) {
             alert(`Error al procesar JSON: ${error.message}`);
@@ -52,110 +54,19 @@ $(document).ready(function () {
         return jsonString;
     }
 
-    // function syntaxHighlight(json) {
-    //     // Escapar los caracteres especiales para evitar inyecciones
-    //     const escapedJSON = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-    //     // Resaltar las claves y valores según el tipo
-    //     return escapedJSON.replace(
-    //         /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-    //         function (match) {
-    //             const cls = /^"/.test(match)
-    //                 ? /:$/.test(match)
-    //                     ? "key"
-    //                     : "string"
-    //                 : /true|false/.test(match)
-    //                     ? "boolean"
-    //                     : /null/.test(match)
-    //                         ? "null"
-    //                         : "number";
-    //             return `<span class="${cls}">${match}</span>`;
-    //         }
-    //     );
-    // }
-
-
-
-    // function syntaxHighlight(json) {
-    //     let depth = 0; // Control de la profundidad de anidación
-
-    //     // Función para generar clases únicas en base a la profundidad
-    //     function getNestedClass(depth) {
-    //         return `nested-depth-${depth}`;
-    //     }
-
-    //     // Escapar caracteres especiales
-    //     const escapedJSON = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-    //     // Resaltar claves, valores y manejar aperturas/cierres de objetos/arreglos
-    //     let highlightedJSON = escapedJSON.replace(
-    //         /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?|[\{\[]|[\}\]])/g,
-    //         function (match) {
-    //             if (/[\{\[]/.test(match)) {
-    //                 // Detectar apertura de objeto o arreglo
-    //                 const nestedClass = getNestedClass(depth);
-    //                 const icon = `<span class="toggle">▶</span>`;
-    //                 depth++;
-    //                 return `<span class="toggle-container">${icon} <span class="${nestedClass}">${match}</span>
-    //                             <div class="${nestedClass} nested-content" style="display:block;">`;
-    //             } else if (/[\}\]]/.test(match)) {
-    //                 // Detectar cierre de objeto o arreglo
-    //                 depth--;
-    //                 const nestedClass = getNestedClass(depth);
-    //                 return `</div><span class="${nestedClass}">${match}</span></span>`;
-    //             } else {
-    //                 // Resaltar claves y valores
-    //                 const cls = /^"/.test(match)
-    //                     ? /:$/.test(match)
-    //                         ? "key"
-    //                         : "string"
-    //                     : /true|false/.test(match)
-    //                         ? "boolean"
-    //                         : /null/.test(match)
-    //                             ? "null"
-    //                             : "number";
-    //                 return `<span class="${cls}">${match}</span>`;
-    //             }
-    //         }
-    //     );
-
-    //     // Añadir las clases para las comas
-    //     highlightedJSON = highlightedJSON.replace(
-    //         /,/g, function () {
-    //             return `<span class="comma">,</span>`;
-    //         }
-    //     );
-
-    //     return highlightedJSON;
-    // }
-
-
-    // $(document).on("click", ".toggle", function () {
-    //     const container = $(this).closest(".toggle-container"); // Encuentra el contenedor raíz
-    //     const nestedContent = container.find("> .nested-content"); // Encuentra el contenido interno
-
-    //     // Alternar visibilidad con lógica ajustada
-    //     if (nestedContent.css("display") === "none") {
-    //         nestedContent.css("display", "block"); // Mostrar contenido interno
-    //         $(this).text("▼"); // Cambiar el ícono a colapsar
-    //     } else {
-    //         nestedContent.css("display", "none"); // Ocultar contenido interno
-    //         $(this).text("▶"); // Cambiar el ícono a expandir
-    //     }
-    // });
-
-
     function syntaxHighlight(json) {
         // Escapar los caracteres especiales para evitar inyecciones
         const escapedJSON = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-        let result = ""; // Acumulador para el JSON resaltado con numeración
+        let result = "";
 
         // Dividir el JSON por líneas para procesar cada línea
         const lines = escapedJSON.split(/\n/);
         lines.forEach((line, index) => {
             // Añadir la numeración como primer carácter de la línea
-            const lineNumber = `<span class="line-number">${index + 1}</span> `;
+            const hasToggle = /[\{\[]/.test(line);
+            const toggleHTML = hasToggle ? `<span class="toggle toggleIcon">▶</span>` : "";
+            const lineNumber = `<span class="line-number" data-line="${index}">${index + 1}</span> `;
 
             // Resaltar claves y valores según el tipo
             const highlightedLine = line.replace(
@@ -170,7 +81,7 @@ $(document).ready(function () {
                             : /null/.test(match)
                                 ? "null"
                                 : "number";
-                    return `<span class="${cls}">${match}</span>`;
+                    return `<span class="${cls} json_data" data-line-index="${index}">${match}</span>`;
                 }
             );
 
@@ -178,10 +89,121 @@ $(document).ready(function () {
             result += lineNumber + highlightedLine + "<br />"; // Añadir salto de línea
         });
 
-        return result; // Retornar el JSON resaltado con numeración
+        result = result.replace(/,/g, function () {
+            return `<span class="comma">,</span>`;
+        });
+
+        result = result.replace(/[\{\[]/g, function (match) {
+            const cls = match == "{" ? "curly-brace-open" : "square-brace-open";
+            return `<span class="${cls}">${match}</span>`;
+        });
+
+        result = result.replace(/[\}\]]/g, function (match) {
+            const cls = match == "}" ? "curly-brace-close" : "square-brace-close";
+            return `<span class="${cls}">${match}</span>`;
+        });
+
+        return result;
+    }
+
+    function findJsonBlock(index, jsonString) {
+        // Dividir el JSON por líneas
+        const jsonLines = jsonString.split(/\n/);
+
+        let currentLine = 0;
+        let startBlockIndex = -1;
+        let endBlockIndex = -1;
+        let stack = 0; // Seguimiento de aperturas y cierres
+
+        for (let i = 0; i < jsonLines.length; i++) {
+            if (i === index) {
+                startBlockIndex = i; // Línea donde comienza el bloque
+            }
+
+            if (startBlockIndex !== -1) {
+                // Contar aperturas y cierres
+                stack += (jsonLines[i].match(/[\{\[]/g) || []).length; // Sumar `{` o `[`
+                stack -= (jsonLines[i].match(/[\}\]]/g) || []).length; // Restar `}` o `]`
+
+                // Bloque está completo cuando el stack llega a 0
+                if (stack === 0) {
+                    endBlockIndex = i;
+                    break;
+                }
+            }
+        }
+
+        return [startBlockIndex, endBlockIndex]; // Retornar las líneas de inicio y fin del bloque
     }
 
 
+    // Usamos delegación de eventos en el documento para manejar los clics
+    $(document).on('click', '.toggleIcon', function () {
+        console.log("ads");
+
+        // Obtener el contenido actual del ícono
+        const currentIcon = $(this).html();
+
+        // Cambiar entre ▶ y ▼
+        $(this).html(currentIcon === "▶" ? "▼" : "▶");
+
+        // Encontrar el bloque de JSON al que pertenece el índice actual
+        const index = $(this).closest('span.line-number').text().split(' ')[0]; // Obtener el índice de la línea
+
+
+
+        if (jsnFina !== null) {
+            const index0 = parseInt(index) - 1;
+
+            console.log({ index0 });
+
+            const block = findJsonBlock(index0, jsnFina); // Llamar a la función que busca el bloque
+            console.log(block);
+
+            // Usar la función findJsonBlock para obtener los índices de inicio y fin del bloque
+            const [startBlockIndex, endBlockIndex] = findJsonBlock(index0, jsnFina);
+
+            console.log(`Bloque inicia en línea: ${startBlockIndex + 1}, termina en línea: ${endBlockIndex + 1}`);
+
+            // Seleccionar todas las líneas dentro del bloque
+            for (let i = startBlockIndex + 1; i < endBlockIndex; i++) {
+                const lineSelector = `.json_data[data-line-index="${i}"]`; // Selector para identificar la línea por índice
+                const lineElement = $(lineSelector);
+
+                if (lineElement.length) {
+                    // Seleccionar también el índice asociado a la línea actual
+                    const lineNumberSelector = `.line-number[data-line="${i}"]`; // Selector para el índice (número de línea)
+                    const lineNumberElement = $(lineNumberSelector);
+
+                    const toggleState = currentIcon === "▶" ? "addClass" : "removeClass"; // Determinamos si se debe ocultar o mostrar
+
+                    // Ocultar o mostrar el contenido y el número de línea
+                    lineElement[toggleState]("hidden");
+                    lineNumberElement[toggleState]("hidden");
+
+                    // Función para manejar la ocultación de las comas y llaves/corchetes
+                    const toggleBracesAndCommas = (element, action) => {
+                        const bracesAndCommas = [
+                            ".comma", ".curly-brace-open", ".square-brace-open",
+                            ".curly-brace-close", ".square-brace-close"
+                        ];
+
+                        bracesAndCommas.forEach(className => {
+                            const nextElement = element.next(className);
+                            if (nextElement.length) {
+                                nextElement[action]("hidden");
+                            }
+                        });
+                    };
+
+                    // Ocultar o mostrar las comas y llaves/corchetes según el estado
+                    toggleBracesAndCommas(lineElement, toggleState);
+                }
+            }
+
+        }
+
+    });
 
 
     $("#copy_input").on("click", function () {
@@ -212,18 +234,27 @@ $(document).ready(function () {
         copyOut(); // Llama a tu función copyInp
     });
 
-    // Función para copiar contenido del output al portapapeles usando la Clipboard API
     function copyOut() {
-        const outputContent = $("#output_json").text(); // Obtener el texto del elemento
+        const outputElement = $("#output_json"); // Seleccionar el elemento que contiene el JSON resaltado
 
-        // Usa la Clipboard API para copiar el texto al portapapeles
-        navigator.clipboard.writeText(outputContent)
+        // Clonar el contenido para manipularlo sin afectar el DOM
+        const clonedContent = outputElement.clone();
+
+        // Remover las numeraciones de línea al buscar y eliminar todas las clases `line-number`
+        clonedContent.find(".line-number").remove();
+
+        // Obtener solo el texto limpio (sin números de línea)
+        const cleanedContent = clonedContent.text();
+
+        // Usar la Clipboard API para copiar el texto al portapapeles
+        navigator.clipboard.writeText(cleanedContent)
             .then(() => {
-                console.log("Contenido copiado al portapapeles");
+                console.log("Contenido copiado al portapapeles sin numeración");
             })
             .catch((err) => {
                 console.error("No se pudo copiar el contenido al portapapeles", err);
             });
     }
+
 
 });
