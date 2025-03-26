@@ -65,7 +65,8 @@ textarea {
   flex-direction: row;
   flex-wrap: wrap;
 }
-.row>h1{
+
+.row>h1 {
   text-align: center;
 }
 
@@ -342,4 +343,65 @@ textarea {
 #output_json:hover {
   scrollbar-color: #45a049 #f1f1f1;
   cursor: pointer;
+}
+
+.toggle-container {
+  display: grid;
+  /* Permitir alineación en una línea */
+  align-items: center;
+  /* Alinear íconos y llaves verticalmente */
+  margin-left: 0;
+  /* Sin sangría inicial */
+}
+.nested-content {
+    display: block;
+    margin-left: 10px;
+    padding-left: 0;
+    position: relative;
+    top: -15px;
+    margin-bottom: 0;
+    line-height: 1; /* Reduce el espacio vertical */
+}
+
+
+.toggle {
+  cursor: pointer;
+  font-weight: bold;
+  margin-right: 5px;
+  /* Espacio entre el ícono y la llave */
+  color: #007BFF;
+  /* Azul para íconos interactivos */
+}
+
+.key,
+.string,
+.number,
+.comma {
+  display: inline;
+  /* Mantener elementos en la misma línea */
+}
+
+.key {
+  color: red;
+  /* Claves en rojo */
+}
+
+.string {
+  color: green;
+  /* Strings en verde */
+}
+
+.number {
+  color: darkorange;
+  /* Números en naranja */
+}
+
+.comma {
+  color: gray;
+  /* Comas en gris */
+}
+
+.hidden {
+  display: none;
+  /* Ocultar completamente los elementos internos */
 }
