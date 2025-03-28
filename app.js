@@ -4,11 +4,13 @@ const path = require('path');
 const app = express();
 const PORT = 8081;
 
-// Servir la carpeta "assets" como estática
+// Servir archivos estáticos (como CSS, JS, imágenes)
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
-// Servir el archivo index.html
-app.use(express.static(__dirname));
+// Servir el archivo HTML principal
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Iniciar el servidor
 app.listen(PORT, () => {
