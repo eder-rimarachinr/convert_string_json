@@ -32,27 +32,52 @@ $(document).ready(function () {
     function convertirJSON(value, outputString) {
         try {
             value = corregirFormato(value);
-
             const parsedJSON = JSON.parse(value);
-            let formattedJSON = JSON.stringify(parsedJSON, null, 4);
-            jsnFina = formattedJSON;
+            const formattedJSON = JSON.stringify(parsedJSON, null, 4);
             outputString.html(syntaxHighlight(formattedJSON));
         } catch (error) {
             alert(`Error al procesar JSON: ${error.message}`);
         }
     }
 
-    function corregirFormato(jsonString) {
-        const lastTwoChars = jsonString.slice(-2);
-        const invalidLastChars = ['";', '];', '};', '},'];
+    // function corregirFormato(jsonString) {
+    //     const lastTwoChars = jsonString.slice(-2);
+    //     const invalidLastChars = ['";', '];', '};', '},'];
 
-        // Corregimos formato si es necesario
-        if (invalidLastChars.includes(lastTwoChars)) {
-            jsonString = jsonString.slice(0, -1);
+    //     // Corregimos formato si es necesario
+    //     if (invalidLastChars.includes(lastTwoChars)) {
+    //         jsonString = jsonString.slice(0, -1);
+    //     }
+
+    //     return jsonString;
+    // }
+
+    function corregirFormato(jsonString) {
+        // Eliminar las comillas exteriores si el string empieza y termina con comillas (simples o dobles)
+        if ((jsonString.startsWith('"') && jsonString.endsWith('"')) ||
+            (jsonString.startsWith("'") && jsonString.endsWith("'"))) {
+            jsonString = jsonString.slice(1, -1);  // Eliminar las comillas exteriores
         }
 
+        // Reemplazar las comillas escapadas (\\") por comillas normales
+        jsonString = jsonString.replace(/\\"/g, '"');  // Reemplazar \" por comillas normales
+
+        // Eliminar cualquier secuencia de escape innecesaria (por ejemplo, eliminar \ antes de comillas dobles)
+        jsonString = jsonString.replace(/\\(.)/g, '$1'); // Elimina cualquier \ innecesario
+
+        // Eliminar la coma extra al final del JSON si existe
+        // Eliminar la coma antes de cerrar un objeto o array
+        jsonString = jsonString.replace(/,(\s*[}\]])/g, '$1');  // Reemplazar la coma antes de } o ]
+
+
+        if ((jsonString.startsWith('"') && jsonString.endsWith('"')) ||
+            (jsonString.startsWith("'") && jsonString.endsWith("'"))) {
+            jsonString = jsonString.slice(1, -1);  // Eliminar las comillas exteriores
+        }
         return jsonString;
     }
+
+
 
     function syntaxHighlight(json) {
         // Escapar los caracteres especiales para evitar inyecciones
@@ -139,7 +164,6 @@ $(document).ready(function () {
 
     // Usamos delegación de eventos en el documento para manejar los clics
     $(document).on('click', '.toggleIcon', function () {
-        console.log("ads");
 
         // Obtener el contenido actual del ícono
         const currentIcon = $(this).html();
@@ -155,15 +179,10 @@ $(document).ready(function () {
         if (jsnFina !== null) {
             const index0 = parseInt(index) - 1;
 
-            console.log({ index0 });
-
             const block = findJsonBlock(index0, jsnFina); // Llamar a la función que busca el bloque
-            console.log(block);
 
             // Usar la función findJsonBlock para obtener los índices de inicio y fin del bloque
             const [startBlockIndex, endBlockIndex] = findJsonBlock(index0, jsnFina);
-
-            console.log(`Bloque inicia en línea: ${startBlockIndex + 1}, termina en línea: ${endBlockIndex + 1}`);
 
             // Seleccionar todas las líneas dentro del bloque
             for (let i = startBlockIndex + 1; i < endBlockIndex; i++) {
@@ -222,9 +241,12 @@ $(document).ready(function () {
         navigator.clipboard.writeText(textarea.val())
             .then(() => {
                 console.log("Texto copiado al portapapeles");
+                alert("Texto copiado al portapapeles");
             })
             .catch((err) => {
                 console.error("No se pudo copiar al portapapeles", err);
+                alert("No se pudo copiar al portapapeles");
+
             });
     }
 
@@ -250,9 +272,11 @@ $(document).ready(function () {
         navigator.clipboard.writeText(cleanedContent)
             .then(() => {
                 console.log("Contenido copiado al portapapeles sin numeración");
+                alert("Contenido copiado al portapapeles sin numeración");
             })
             .catch((err) => {
                 console.error("No se pudo copiar el contenido al portapapeles", err);
+                alert("No se pudo copiar el contenido al portapapeles");
             });
     }
 
