@@ -117,17 +117,12 @@ class JSONFormatter {
   format(jsonString) {
     const input = jsonString.trim();
 
-    // Try parsing the input directly first (for valid JSON)
-    try {
-      const parsed = JSON.parse(input);
-      this.formattedJSON = JSON.stringify(parsed, null, 4);
-      return {
-        success: true,
-        formatted: this.formattedJSON,
-        parsed: parsed
-      };
-    } catch (firstError) {
-      // If direct parsing fails, try with corrections (for JSON strings)
+    // First, detect if it's a JSON string (wrapped in quotes with escaped content)
+    const isJSONString = (input.startsWith('"') && input.endsWith('"') && input.includes('\\')) ||
+                         (input.startsWith("'") && input.endsWith("'") && input.includes('\\'));
+
+    // If it's a JSON string, try to unescape it first
+    if (isJSONString) {
       try {
         const corrected = this.correctFormat(input);
         const parsed = JSON.parse(corrected);
@@ -137,22 +132,92 @@ class JSONFormatter {
           formatted: this.formattedJSON,
           parsed: parsed
         };
-      } catch (secondError) {
-        // Extract position from error message
-        const match = secondError.message.match(/position (\d+)/);
-        const position = match ? parseInt(match[1]) : -1;
-
-        let errorMsg = secondError.message;
-        if (position >= 0) {
-          errorMsg += this.getErrorContext(input, position);
-        }
-
-        return {
-          success: false,
-          error: errorMsg
-        };
+      } catch (escapedError) {
+        // If unescaping fails, continue to try direct parse
       }
     }
+
+    // Try parsing the input directly (for regular JSON)
+    try {
+      const parsed = JSON.parse(input);
+      this.formattedJSON = JSON.stringify(parsed, null, 4);
+      return {
+        success: true,
+        formatted: this.formattedJSON,
+        parsed: parsed
+      };
+    } catch (directError) {
+      // Last attempt: try with corrections (trailing commas, etc)
+      try {
+        const corrected = this.correctFormat(input);
+        const parsed = JSON.parse(corrected);
+        this.formattedJSON = JSON.stringify(parsed, null, 4);
+        return {
+          success: true,
+          formatted: this.formattedJSON,
+          parsed: parsed
+        };
+      } catch (finalError) {
+        // Último intento: usar repairJSON para corregir errores comunes
+        try {
+          const repaired = this.repairJSON(input);
+          const parsed = JSON.parse(repaired);
+          this.formattedJSON = JSON.stringify(parsed, null, 4);
+          return {
+            success: true,
+            formatted: this.formattedJSON,
+            parsed: parsed
+          };
+        } catch (repairError) {
+          // Si falla incluso después de reparar, devolver el error
+          const match = repairError.message.match(/position (\d+)/);
+          const position = match ? parseInt(match[1]) : -1;
+
+          let errorMsg = repairError.message;
+          if (position >= 0) {
+            errorMsg += this.getErrorContext(input, position);
+          }
+
+          return {
+            success: false,
+            error: errorMsg
+          };
+        }
+      }
+    }
+  }
+
+  /**
+   * Repairs common JSON issues to make it parseable
+   */
+  repairJSON(str) {
+    // A. If it's a JS string wrapped in quotes, clean it
+    if ((str.startsWith('"') && str.endsWith('"')) || (str.startsWith("'") && str.endsWith("'"))) {
+      str = str.slice(1, -1).replace(/\\"/g, '"');
+    }
+
+    // B. Remove trailing commas (e.g., {"a":1,} -> {"a":1})
+    str = str.replace(/,\s*([\]}])/g, '$1');
+
+    // C. BALANCE BRACES (Fixes EOF errors)
+    // Count how many open and close braces/brackets exist
+    const openBraces = (str.match(/{/g) || []).length;
+    const closeBraces = (str.match(/}/g) || []).length;
+    const openBrackets = (str.match(/\[/g) || []).length;
+    const closeBrackets = (str.match(/\]/g) || []).length;
+
+    // Add missing closing braces/brackets at the end
+    const missingBraces = openBraces - closeBraces;
+    const missingBrackets = openBrackets - closeBraces;
+
+    if (missingBraces > 0) {
+      str += '}'.repeat(missingBraces);
+    }
+    if (missingBrackets > 0) {
+      str += ']'.repeat(missingBrackets);
+    }
+
+    return str;
   }
 
   /**
