@@ -1,284 +1,419 @@
-$(document).ready(function () {
-    const inputString = $("#input_string");
+/**
+ * JSON String to JSON Converter
+ * Modern ES6+ implementation without jQuery
+ * @author Eder Rimarachin
+ */
 
-    let jsnFina = null;
+// ============================================
+// TOAST NOTIFICATION SYSTEM
+// ============================================
+class ToastManager {
+  constructor() {
+    this.container = document.getElementById('toast-container');
+  }
 
-    inputString.empty();
+  show(message, type = 'success', duration = 3000) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
 
-    listenClickBtnConverter();
+    const icons = {
+      success: '✓',
+      error: '✕',
+      warning: '⚠'
+    };
 
-    function listenClickBtnConverter() {
-        const outputString = $("#output_json");
-        const btnConvertir = $("#btn_convertir");
+    toast.innerHTML = `
+      <span class="toast-icon">${icons[type] || icons.success}</span>
+      <span class="toast-message">${message}</span>
+      <button class="toast-close" aria-label="Close">×</button>
+    `;
 
-        // Verifica que el botón y el campo de entrada existen
-        if (btnConvertir.length && inputString.length && outputString.length) {
-            btnConvertir.on("click", function (evt) {
-                evt.preventDefault();
+    this.container.appendChild(toast);
 
-                const data = inputString.val().trim(); // Actualiza el valor aquí
+    // Close button handler
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.addEventListener('click', () => this.remove(toast));
 
-                if (data.length === 0) {
-                    return; // Si no hay datos, no hacer nada
-                }
-
-                convertirJSON(data, outputString); // Procesa el JSON
-
-                $(this).blur();
-            });
-        }
+    // Auto remove after duration
+    if (duration > 0) {
+      setTimeout(() => this.remove(toast), duration);
     }
 
-    function convertirJSON(value, outputString) {
-        try {
-            value = corregirFormato(value);
-            const parsedJSON = JSON.parse(value);
-            const formattedJSON = JSON.stringify(parsedJSON, null, 4);
-            outputString.html(syntaxHighlight(formattedJSON));
-        } catch (error) {
-            alert(`Error al procesar JSON: ${error.message}`);
-        }
+    return toast;
+  }
+
+  remove(toast) {
+    toast.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 300);
+  }
+
+  success(message, duration = 3000) {
+    return this.show(message, 'success', duration);
+  }
+
+  error(message, duration = 4000) {
+    return this.show(message, 'error', duration);
+  }
+
+  warning(message, duration = 3500) {
+    return this.show(message, 'warning', duration);
+  }
+}
+
+// ============================================
+// JSON FORMATTER & PARSER
+// ============================================
+class JSONFormatter {
+  constructor() {
+    this.formattedJSON = null;
+  }
+
+  /**
+   * Corrects common JSON string formatting issues
+   */
+  correctFormat(jsonString) {
+    let corrected = jsonString.trim();
+
+    // Remove outer quotes if present
+    if ((corrected.startsWith('"') && corrected.endsWith('"')) ||
+        (corrected.startsWith("'") && corrected.endsWith("'"))) {
+      corrected = corrected.slice(1, -1);
     }
 
-    // function corregirFormato(jsonString) {
-    //     const lastTwoChars = jsonString.slice(-2);
-    //     const invalidLastChars = ['";', '];', '};', '},'];
+    // Unescape quotes
+    corrected = corrected.replace(/\\"/g, '"');
+    corrected = corrected.replace(/\\'/g, "'");
 
-    //     // Corregimos formato si es necesario
-    //     if (invalidLastChars.includes(lastTwoChars)) {
-    //         jsonString = jsonString.slice(0, -1);
-    //     }
+    // Remove unnecessary escapes
+    corrected = corrected.replace(/\\([^"'\\])/g, '$1');
 
-    //     return jsonString;
-    // }
+    // Remove trailing commas before closing braces/brackets
+    corrected = corrected.replace(/,(\s*[}\]])/g, '$1');
 
-    function corregirFormato(jsonString) {
-        // Eliminar las comillas exteriores si el string empieza y termina con comillas (simples o dobles)
-        if ((jsonString.startsWith('"') && jsonString.endsWith('"')) ||
-            (jsonString.startsWith("'") && jsonString.endsWith("'"))) {
-            jsonString = jsonString.slice(1, -1);  // Eliminar las comillas exteriores
-        }
-
-        // Reemplazar las comillas escapadas (\\") por comillas normales
-        jsonString = jsonString.replace(/\\"/g, '"');  // Reemplazar \" por comillas normales
-
-        // Eliminar cualquier secuencia de escape innecesaria (por ejemplo, eliminar \ antes de comillas dobles)
-        jsonString = jsonString.replace(/\\(.)/g, '$1'); // Elimina cualquier \ innecesario
-
-        // Eliminar la coma extra al final del JSON si existe
-        // Eliminar la coma antes de cerrar un objeto o array
-        jsonString = jsonString.replace(/,(\s*[}\]])/g, '$1');  // Reemplazar la coma antes de } o ]
-
-
-        if ((jsonString.startsWith('"') && jsonString.endsWith('"')) ||
-            (jsonString.startsWith("'") && jsonString.endsWith("'"))) {
-            jsonString = jsonString.slice(1, -1);  // Eliminar las comillas exteriores
-        }
-        return jsonString;
+    // Second pass for outer quotes (in case there were nested escapes)
+    if ((corrected.startsWith('"') && corrected.endsWith('"')) ||
+        (corrected.startsWith("'") && corrected.endsWith("'"))) {
+      corrected = corrected.slice(1, -1);
     }
 
+    return corrected;
+  }
 
-
-    function syntaxHighlight(json) {
-        // Escapar los caracteres especiales para evitar inyecciones
-        const escapedJSON = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-        let result = "";
-
-        // Dividir el JSON por líneas para procesar cada línea
-        const lines = escapedJSON.split(/\n/);
-        lines.forEach((line, index) => {
-            // Añadir la numeración como primer carácter de la línea
-            const hasToggle = /[\{\[]/.test(line);
-            const toggleHTML = hasToggle ? `<span class="toggle toggleIcon">▶</span>` : "";
-            const lineNumber = `<span class="line-number" data-line="${index}">${index + 1}</span> `;
-
-            // Resaltar claves y valores según el tipo
-            const highlightedLine = line.replace(
-                /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-                function (match) {
-                    const cls = /^"/.test(match)
-                        ? /:$/.test(match)
-                            ? "key"
-                            : "string"
-                        : /true|false/.test(match)
-                            ? "boolean"
-                            : /null/.test(match)
-                                ? "null"
-                                : "number";
-                    return `<span class="${cls} json_data" data-line-index="${index}">${match}</span>`;
-                }
-            );
-
-            // Combinar la numeración con la línea resaltada
-            result += lineNumber + highlightedLine + "<br />"; // Añadir salto de línea
-        });
-
-        result = result.replace(/,/g, function () {
-            return `<span class="comma">,</span>`;
-        });
-
-        result = result.replace(/[\{\[]/g, function (match) {
-            const cls = match == "{" ? "curly-brace-open" : "square-brace-open";
-            return `<span class="${cls}">${match}</span>`;
-        });
-
-        result = result.replace(/[\}\]]/g, function (match) {
-            const cls = match == "}" ? "curly-brace-close" : "square-brace-close";
-            return `<span class="${cls}">${match}</span>`;
-        });
-
-        return result;
+  /**
+   * Parse and format JSON string
+   */
+  format(jsonString) {
+    try {
+      const corrected = this.correctFormat(jsonString);
+      const parsed = JSON.parse(corrected);
+      this.formattedJSON = JSON.stringify(parsed, null, 4);
+      return {
+        success: true,
+        formatted: this.formattedJSON,
+        parsed: parsed
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
     }
+  }
 
-    function findJsonBlock(index, jsonString) {
-        // Dividir el JSON por líneas
-        const jsonLines = jsonString.split(/\n/);
+  /**
+   * Apply syntax highlighting to formatted JSON
+   */
+  syntaxHighlight(json) {
+    const escaped = json
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
 
-        let currentLine = 0;
-        let startBlockIndex = -1;
-        let endBlockIndex = -1;
-        let stack = 0; // Seguimiento de aperturas y cierres
+    const lines = escaped.split('\n');
+    let result = '';
 
-        for (let i = 0; i < jsonLines.length; i++) {
-            if (i === index) {
-                startBlockIndex = i; // Línea donde comienza el bloque
-            }
+    lines.forEach((line, index) => {
+      const hasToggle = /[{\[]/.test(line);
+      const toggleHTML = hasToggle
+        ? `<span class="toggle toggleIcon" data-line="${index}">▶</span>`
+        : '';
 
-            if (startBlockIndex !== -1) {
-                // Contar aperturas y cierres
-                stack += (jsonLines[i].match(/[\{\[]/g) || []).length; // Sumar `{` o `[`
-                stack -= (jsonLines[i].match(/[\}\]]/g) || []).length; // Restar `}` o `]`
+      const lineNumber = `<span class="line-number">${index + 1}</span>`;
 
-                // Bloque está completo cuando el stack llega a 0
-                if (stack === 0) {
-                    endBlockIndex = i;
-                    break;
-                }
-            }
+      // Highlight keys, values, and literals
+      const highlightedLine = line.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        (match) => {
+          let cls;
+          if (/^"/.test(match)) {
+            cls = /:$/.test(match) ? 'key' : 'string';
+          } else if (/true|false/.test(match)) {
+            cls = 'boolean';
+          } else if (/null/.test(match)) {
+            cls = 'null';
+          } else {
+            cls = 'number';
+          }
+          return `<span class="${cls}" data-line="${index}">${match}</span>`;
         }
+      );
 
-        return [startBlockIndex, endBlockIndex]; // Retornar las líneas de inicio y fin del bloque
-    }
+      // Highlight commas
+      const withCommas = highlightedLine.replace(/,/g, '<span class="comma">,</span>');
 
+      // Highlight braces and brackets
+      const withBraces = withCommas
+        .replace(/\{/g, '<span class="curly-brace-open">{</span>')
+        .replace(/\}/g, '<span class="curly-brace-close">}</span>')
+        .replace(/\[/g, '<span class="square-brace-open">[</span>')
+        .replace(/\]/g, '<span class="square-brace-close">]</span>');
 
-    // Usamos delegación de eventos en el documento para manejar los clics
-    $(document).on('click', '.toggleIcon', function () {
-
-        // Obtener el contenido actual del ícono
-        const currentIcon = $(this).html();
-
-        // Cambiar entre ▶ y ▼
-        $(this).html(currentIcon === "▶" ? "▼" : "▶");
-
-        // Encontrar el bloque de JSON al que pertenece el índice actual
-        const index = $(this).closest('span.line-number').text().split(' ')[0]; // Obtener el índice de la línea
-
-
-
-        if (jsnFina !== null) {
-            const index0 = parseInt(index) - 1;
-
-            const block = findJsonBlock(index0, jsnFina); // Llamar a la función que busca el bloque
-
-            // Usar la función findJsonBlock para obtener los índices de inicio y fin del bloque
-            const [startBlockIndex, endBlockIndex] = findJsonBlock(index0, jsnFina);
-
-            // Seleccionar todas las líneas dentro del bloque
-            for (let i = startBlockIndex + 1; i < endBlockIndex; i++) {
-                const lineSelector = `.json_data[data-line-index="${i}"]`; // Selector para identificar la línea por índice
-                const lineElement = $(lineSelector);
-
-                if (lineElement.length) {
-                    // Seleccionar también el índice asociado a la línea actual
-                    const lineNumberSelector = `.line-number[data-line="${i}"]`; // Selector para el índice (número de línea)
-                    const lineNumberElement = $(lineNumberSelector);
-
-                    const toggleState = currentIcon === "▶" ? "addClass" : "removeClass"; // Determinamos si se debe ocultar o mostrar
-
-                    // Ocultar o mostrar el contenido y el número de línea
-                    lineElement[toggleState]("hidden");
-                    lineNumberElement[toggleState]("hidden");
-
-                    // Función para manejar la ocultación de las comas y llaves/corchetes
-                    const toggleBracesAndCommas = (element, action) => {
-                        const bracesAndCommas = [
-                            ".comma", ".curly-brace-open", ".square-brace-open",
-                            ".curly-brace-close", ".square-brace-close"
-                        ];
-
-                        bracesAndCommas.forEach(className => {
-                            const nextElement = element.next(className);
-                            if (nextElement.length) {
-                                nextElement[action]("hidden");
-                            }
-                        });
-                    };
-
-                    // Ocultar o mostrar las comas y llaves/corchetes según el estado
-                    toggleBracesAndCommas(lineElement, toggleState);
-                }
-            }
-
-        }
-
+      // Wrap each line in a div for better collapse control
+      result += `<div class="json-line" data-line-index="${index}">${toggleHTML}${lineNumber}${withBraces}</div>`;
     });
 
+    return result;
+  }
 
-    $("#copy_input").on("click", function () {
-        copyInp(); // Llama a tu función copyInp
-    });
+  /**
+   * Find the start and end indices of a JSON block
+   */
+  findJsonBlock(lineIndex, jsonString) {
+    const lines = jsonString.split('\n');
+    let startIndex = lineIndex;
+    let endIndex = -1;
+    let stack = 0;
 
+    for (let i = startIndex; i < lines.length; i++) {
+      const openMatches = lines[i].match(/[{\[]/g);
+      const closeMatches = lines[i].match(/[}\]]/g);
 
-    // Función para copiar contenido de input al portapapeles usando la Clipboard API
-    function copyInp() {
-        const textarea = $("#input_string");
+      stack += (openMatches ? openMatches.length : 0);
+      stack -= (closeMatches ? closeMatches.length : 0);
 
-        // Asegúrate de que el campo de texto tiene el foco antes de copiar
-        textarea.select();
-
-        // Usa la Clipboard API para copiar el texto
-        navigator.clipboard.writeText(textarea.val())
-            .then(() => {
-                console.log("Texto copiado al portapapeles");
-                alert("Texto copiado al portapapeles");
-            })
-            .catch((err) => {
-                console.error("No se pudo copiar al portapapeles", err);
-                alert("No se pudo copiar al portapapeles");
-
-            });
+      if (stack === 0) {
+        endIndex = i;
+        break;
+      }
     }
 
+    return [startIndex, endIndex];
+  }
+}
 
-    // Asigna el evento de clic al ícono de copiar
-    $("#copy_output").on("click", function () {
-        copyOut(); // Llama a tu función copyInp
+// ============================================
+// CLIPBOARD MANAGER
+// ============================================
+class ClipboardManager {
+  constructor(toast) {
+    this.toast = toast;
+  }
+
+  async copy(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.toast.success('Copied to clipboard!');
+      return true;
+    } catch (error) {
+      this.toast.error('Failed to copy to clipboard');
+      console.error('Clipboard error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Copy content removing line numbers
+   */
+  async copyFromElement(element) {
+    const clone = element.cloneNode(true);
+
+    // Remove line numbers
+    const lineNumbers = clone.querySelectorAll('.line-number');
+    lineNumbers.forEach(ln => ln.remove());
+
+    // Remove toggle icons
+    const toggles = clone.querySelectorAll('.toggle');
+    toggles.forEach(t => t.remove());
+
+    const text = clone.textContent || clone.innerText;
+    return await this.copy(text);
+  }
+}
+
+// ============================================
+// JSON CONVERTER APP
+// ============================================
+class JSONConverterApp {
+  constructor() {
+    this.toast = new ToastManager();
+    this.formatter = new JSONFormatter();
+    this.clipboard = new ClipboardManager(this.toast);
+
+    this.elements = {
+      inputTextarea: document.getElementById('input_string'),
+      outputPre: document.getElementById('output_json'),
+      convertBtn: document.getElementById('btn_convertir'),
+      copyInputBtn: document.getElementById('copy_input'),
+      copyOutputBtn: document.getElementById('copy_output'),
+      clearInputBtn: document.getElementById('clear_input'),
+      collapseAllBtn: document.getElementById('collapse_all'),
+      expandAllBtn: document.getElementById('expand_all')
+    };
+
+    this.init();
+  }
+
+  init() {
+    this.bindEvents();
+    this.elements.inputTextarea.focus();
+  }
+
+  bindEvents() {
+    // Convert button
+    this.elements.convertBtn.addEventListener('click', () => this.handleConvert());
+
+    // Enter key in textarea
+    this.elements.inputTextarea.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'Enter') {
+        this.handleConvert();
+      }
     });
 
-    function copyOut() {
-        const outputElement = $("#output_json"); // Seleccionar el elemento que contiene el JSON resaltado
+    // Copy buttons
+    this.elements.copyInputBtn.addEventListener('click', () => this.handleCopyInput());
+    this.elements.copyOutputBtn.addEventListener('click', () => this.handleCopyOutput());
 
-        // Clonar el contenido para manipularlo sin afectar el DOM
-        const clonedContent = outputElement.clone();
+    // Clear button
+    this.elements.clearInputBtn.addEventListener('click', () => this.handleClear());
 
-        // Remover las numeraciones de línea al buscar y eliminar todas las clases `line-number`
-        clonedContent.find(".line-number").remove();
+    // Collapse/Expand buttons
+    this.elements.collapseAllBtn.addEventListener('click', () => this.handleCollapseAll());
+    this.elements.expandAllBtn.addEventListener('click', () => this.handleExpandAll());
 
-        // Obtener solo el texto limpio (sin números de línea)
-        const cleanedContent = clonedContent.text();
+    // Toggle icons (event delegation)
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('toggleIcon')) {
+        this.handleToggle(e.target);
+      }
+    });
+  }
 
-        // Usar la Clipboard API para copiar el texto al portapapeles
-        navigator.clipboard.writeText(cleanedContent)
-            .then(() => {
-                console.log("Contenido copiado al portapapeles sin numeración");
-                alert("Contenido copiado al portapapeles sin numeración");
-            })
-            .catch((err) => {
-                console.error("No se pudo copiar el contenido al portapapeles", err);
-                alert("No se pudo copiar el contenido al portapapeles");
-            });
+  handleConvert() {
+    const input = this.elements.inputTextarea.value.trim();
+
+    if (!input) {
+      this.toast.warning('Please enter a JSON string');
+      return;
     }
 
+    // Show loading state
+    this.elements.convertBtn.classList.add('loading');
+    this.elements.convertBtn.disabled = true;
 
+    // Use setTimeout to allow UI to update
+    setTimeout(() => {
+      const result = this.formatter.format(input);
+
+      if (result.success) {
+        const highlighted = this.formatter.syntaxHighlight(result.formatted);
+        this.elements.outputPre.innerHTML = highlighted;
+        this.toast.success('JSON converted successfully!');
+      } else {
+        this.toast.error(`Invalid JSON: ${result.error}`);
+        this.elements.outputPre.innerHTML = '';
+      }
+
+      // Remove loading state
+      this.elements.convertBtn.classList.remove('loading');
+      this.elements.convertBtn.disabled = false;
+    }, 100);
+  }
+
+  handleCopyInput() {
+    const text = this.elements.inputTextarea.value;
+    if (text) {
+      this.clipboard.copy(text);
+    } else {
+      this.toast.warning('Nothing to copy');
+    }
+  }
+
+  handleCopyOutput() {
+    if (this.elements.outputPre.textContent) {
+      this.clipboard.copyFromElement(this.elements.outputPre);
+    } else {
+      this.toast.warning('No output to copy');
+    }
+  }
+
+  handleClear() {
+    this.elements.inputTextarea.value = '';
+    this.elements.outputPre.innerHTML = '';
+    this.elements.inputTextarea.focus();
+    this.toast.success('Cleared!');
+  }
+
+  handleToggle(toggleIcon) {
+    const lineIndex = parseInt(toggleIcon.getAttribute('data-line'));
+    const currentIcon = toggleIcon.textContent;
+    const isExpanded = currentIcon === '▼';
+
+    // Toggle icon
+    toggleIcon.textContent = isExpanded ? '▶' : '▼';
+
+    if (!this.formatter.formattedJSON) return;
+
+    const [startIndex, endIndex] = this.formatter.findJsonBlock(
+      lineIndex,
+      this.formatter.formattedJSON
+    );
+
+    // Toggle visibility of entire lines using the json-line containers
+    for (let i = startIndex + 1; i <= endIndex; i++) {
+      const lineContainer = document.querySelector(`.json-line[data-line-index="${i}"]`);
+      if (lineContainer) {
+        if (isExpanded) {
+          lineContainer.classList.add('hidden');
+        } else {
+          lineContainer.classList.remove('hidden');
+        }
+      }
+    }
+  }
+
+  handleCollapseAll() {
+    const toggles = document.querySelectorAll('.toggleIcon');
+    toggles.forEach(toggle => {
+      if (toggle.textContent === '▼') {
+        toggle.click();
+      }
+    });
+  }
+
+  handleExpandAll() {
+    const toggles = document.querySelectorAll('.toggleIcon');
+    toggles.forEach(toggle => {
+      if (toggle.textContent === '▶') {
+        toggle.click();
+      }
+    });
+  }
+}
+
+// ============================================
+// INITIALIZE APP
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  const app = new JSONConverterApp();
+
+
+  // Add global reference for debugging (optional)
+  window.jsonConverterApp = app;
+
+  console.log('%cJSON Converter Ready! 🚀', 'color: #667eea; font-size: 16px; font-weight: bold;');
 });
+

@@ -8,89 +8,221 @@
     <title>JSON String to JSON Converter | Online JSON Formatter</title>
 
     <!-- Descripción para SEO (Máx. 160 caracteres) -->
-    <meta name="description" content="Convierte cadenas JSON en objetos JSON formateados en línea. Fácil, rápido y sin necesidad de instalación.">
+    <meta
+      name="description"
+      content="Convierte cadenas JSON en objetos JSON formateados en línea. Fácil, rápido y sin necesidad de instalación."
+    />
 
     <!-- Palabras clave (No tienen mucho peso en Google, pero aún son útiles) -->
-    <meta name="keywords" content="JSON, convert JSON, JSON formatter, JSON online, parse JSON">
+    <meta
+      name="keywords"
+      content="JSON, convert JSON, JSON formatter, JSON online, parse JSON"
+    />
 
     <!-- Autor -->
-    <meta name="author" content="Eder Rimarachin">
+    <meta name="author" content="Eder Rimarachin" />
 
     <!-- Publisher -->
-    <meta name="publisher" content="Eder Rimarachin">
+    <meta name="publisher" content="Eder Rimarachin" />
 
     <!-- Robots -->
-    <meta name="robots" content="index, follow">
-    
+    <meta name="robots" content="index, follow" />
+
     <!-- Meta para redes sociales (Open Graph) -->
-    <meta property="og:title" content="JSON String to JSON Converter | Online JSON Formatter">
-    <meta property="og:description" content="Convierte y formatea cadenas JSON fácilmente con esta herramienta online gratuita.">
-    <meta property="og:image" content="https://jsonconverter.eder-rimarachin.com/assets/preview-image.png">
-    <meta property="og:url" content="https://jsonconverter.eder-rimarachin.com">
-    <meta property="og:type" content="website">
+    <meta
+      property="og:title"
+      content="JSON String to JSON Converter | Online JSON Formatter"
+    />
+    <meta
+      property="og:description"
+      content="Convierte y formatea cadenas JSON fácilmente con esta herramienta online gratuita."
+    />
+    <meta
+      property="og:image"
+      content="https://jsonconverter.eder-rimarachin.com/assets/preview-image.png"
+    />
+    <meta
+      property="og:url"
+      content="https://jsonconverter.eder-rimarachin.com"
+    />
+    <meta property="og:type" content="website" />
 
     <!-- Meta para Twitter Cards -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="JSON String to JSON Converter">
-    <meta name="twitter:description" content="Herramienta online para convertir JSON Strings a JSON formateado.">
-    <meta name="twitter:image" content="https://jsonconverter.eder-rimarachin.com/assets/preview-image.png">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JSON String to JSON Converter" />
+    <meta
+      name="twitter:description"
+      content="Herramienta online para convertir JSON Strings a JSON formateado."
+    />
+    <meta
+      name="twitter:image"
+      content="https://jsonconverter.eder-rimarachin.com/assets/preview-image.png"
+    />
 
     <!-- Favicon -->
-    <!-- <link rel="icon" type="image/png" href="./assets/favicon.ico" /> -->
-    <link rel="icon" type="image/ico" href="https://jsonconverter.eder-rimarachin.com/assets/favicon.ico" />
+    <link
+      rel="icon"
+      type="image/ico"
+      href="https://jsonconverter.eder-rimarachin.com/assets/favicon.ico"
+    />
 
     <!-- Canonical URL (Evita contenido duplicado) -->
     <link rel="canonical" href="https://jsonconverter.eder-rimarachin.com" />
 
     <!-- CSS -->
     <link rel="stylesheet" href="./css/index.css" />
-</head>
-
+  </head>
 
   <body>
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
     <main id="app" class="container">
       <div class="row">
-        <h1 class="title_page">JSON String to JSON Converter</h1>
+        <h1 class="title_page">
+          <span class="title-icon">{ }</span>
+          JSON String to JSON Converter
+        </h1>
       </div>
 
       <div class="row">
-        <section id="div_input_string">
+        <section id="div_input_string" class="editor-section">
           <div class="form_inp">
-            <div class="lable_inp">
-              <label for="input_string">INPUT</label>
-              <i id="copy_input" class="gg-copy"></i>
+            <div class="label_inp">
+              <label for="input_string">
+                <span class="label-icon">📥</span> INPUT
+              </label>
+              <div class="actions">
+                <button
+                  id="clear_input"
+                  class="icon-btn"
+                  title="Clear input"
+                  aria-label="Clear input"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                    />
+                  </svg>
+                </button>
+                <button
+                  id="copy_input"
+                  class="icon-btn"
+                  title="Copy input"
+                  aria-label="Copy input"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path
+                      d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <textarea id="input_string" placeholder="Enter a json string">
-            </textarea>
+            <textarea
+              id="input_string"
+              placeholder='Paste your JSON string here... e.g., "{\"name\":\"John\"}"'
+              spellcheck="false"
+            ></textarea>
           </div>
 
           <div class="bttn_convert">
             <button
               type="button"
-              value="Convertir"
               id="btn_convertir"
               class="btn btn-primary"
+              aria-label="Convert JSON"
             >
-              Converter
+              <span class="btn-text">Convert JSON</span>
+              <span class="btn-icon">→</span>
             </button>
           </div>
         </section>
 
-        <section id="div_output_json">
+        <section id="div_output_json" class="editor-section">
           <div class="form_out">
-            <div class="lable_out">
-              <label for="output_json">OUTPUT</label>
-              <i id="copy_output" class="gg-copy"></i>
+            <div class="label_out">
+              <label for="output_json">
+                <span class="label-icon">📤</span> OUTPUT
+              </label>
+              <div class="actions">
+                <button
+                  id="collapse_all"
+                  class="icon-btn"
+                  title="Collapse all"
+                  aria-label="Collapse all"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                <button
+                  id="expand_all"
+                  class="icon-btn"
+                  title="Expand all"
+                  aria-label="Expand all"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="18 15 12 9 6 15" />
+                  </svg>
+                </button>
+                <button
+                  id="copy_output"
+                  class="icon-btn"
+                  title="Copy output"
+                  aria-label="Copy output"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path
+                      d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <pre name="output" id="output_json"></pre>
+            <pre id="output_json" class="json-output"></pre>
           </div>
         </section>
       </div>
     </main>
-    
-    <!-- jQuery CDN -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <script type="text/javascript" src="./js/index.js"></script>
+    <script type="module" src="./js/index.js"></script>
   </body>
 </html>
