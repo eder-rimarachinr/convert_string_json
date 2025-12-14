@@ -23,6 +23,7 @@ Convierte cadenas JSON en objetos JSON formateados en línea de manera elegante 
 - ✅ Copiar al portapapeles con un solo clic
 - ✅ Limpiar campos rápidamente
 - ✅ Corrección automática de formatos comunes
+- ✅ Reparación inteligente de JSON (balanceo de llaves, comas)
 - ✅ Notificaciones toast elegantes (sin alertas molestas)
 - ✅ Atajos de teclado (Ctrl+Enter para convertir)
 - ✅ Numeración de líneas para mejor legibilidad
@@ -34,11 +35,20 @@ Convierte cadenas JSON en objetos JSON formateados en línea de manera elegante 
 - Carga rápida y ligero
 - Compatible con navegadores modernos
 
+### 🔒 **Seguridad**
+- Headers de seguridad configurados (CSP, X-Frame-Options, etc.)
+- Sin vulnerabilidades conocidas
+- Procesamiento local del JSON (no se envía a servidores)
+- Dockerfile optimizado con usuario no-root
+- Nginx con configuración de seguridad robusta
+
 ## 🛠️ Tecnologías
 
 - **HTML5** - Estructura semántica
 - **CSS3** - Variables CSS, Grid, Flexbox, Animaciones
 - **JavaScript ES6+** - Clases, Async/Await, Modules
+- **Nginx** - Servidor web de producción
+- **Docker** - Containerización
 - **Sin frameworks** - Vanilla JS puro
 
 ## 📦 Estructura del Proyecto
@@ -46,6 +56,14 @@ Convierte cadenas JSON en objetos JSON formateados en línea de manera elegante 
 ```
 convert_string_json/
 ├── index.html           # Estructura HTML mejorada
+├── robots.txt           # SEO - Control de bots
+├── sitemap.xml          # SEO - Mapa del sitio
+├── security.txt         # Política de seguridad
+├── Dockerfile           # Imagen Docker optimizada
+├── docker-compose.yml   # Orquestación de contenedores
+├── nginx.conf           # Configuración Nginx con seguridad
+├── .dockerignore        # Archivos a excluir del build
+├── .gitignore           # Archivos a excluir de Git
 ├── css/
 │   └── index.css       # Estilos modernos con variables CSS
 ├── js/
@@ -113,6 +131,86 @@ python -m http.server 8000
 # Luego abrir http://localhost:8000
 ```
 
+### Despliegue con Docker
+
+#### Construcción local
+
+```bash
+# Construir la imagen
+docker build -t json-converter:latest .
+
+# Ejecutar el contenedor
+docker run -d -p 8080:80 --name json-converter json-converter:latest
+
+# Acceder a http://localhost:8080
+```
+
+#### Usando Docker Compose
+
+```bash
+# Iniciar los servicios
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f
+
+# Detener servicios
+docker-compose down
+```
+
+#### Publicar en Docker Hub
+
+```bash
+# Login en Docker Hub
+docker login
+
+# Tag de la imagen
+docker tag json-converter:latest yourusername/json-converter:latest
+
+# Push a Docker Hub
+docker push yourusername/json-converter:latest
+```
+
+### Integración con Cloudflare
+
+1. **Subir a GitHub**: Haz push de tu código a GitHub
+2. **Conectar con Cloudflare Pages**:
+   - Ve a Cloudflare Dashboard > Pages
+   - Conecta tu repositorio de GitHub
+   - Configura el build (no necesita build, es estático)
+   - Deploy automático en cada push
+
+3. **Alternativa con Docker + Cloudflare Tunnel**:
+   ```bash
+   # Instalar cloudflared
+   # Windows: descarga desde https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation
+
+   # Login
+   cloudflared tunnel login
+
+   # Crear tunnel
+   cloudflared tunnel create json-converter
+
+   # Ruta del contenedor Docker
+   cloudflared tunnel route dns json-converter yourdomain.com
+
+   # Ejecutar
+   cloudflared tunnel run json-converter --url http://localhost:8080
+   ```
+
+### GitHub Actions CI/CD
+
+El proyecto incluye un workflow de GitHub Actions (`.github/workflows/docker-build.yml`) que:
+- Construye la imagen Docker automáticamente
+- La sube a Docker Hub en cada push a main
+- Usa cache para builds más rápidos
+
+**Configuración necesaria:**
+1. Ve a Settings > Secrets en tu repositorio de GitHub
+2. Añade estos secrets:
+   - `DOCKER_USERNAME`: Tu usuario de Docker Hub
+   - `DOCKER_PASSWORD`: Tu token de acceso de Docker Hub
+
 ### Personalizar
 
 Las variables CSS están en `:root` para fácil personalización:
@@ -125,6 +223,33 @@ Las variables CSS están en `:root` para fácil personalización:
   /* ... más variables */
 }
 ```
+
+## 🔒 Seguridad
+
+### Headers de Seguridad Implementados
+
+- **Content-Security-Policy**: Previene XSS
+- **X-Frame-Options**: Previene clickjacking
+- **X-Content-Type-Options**: Previene MIME sniffing
+- **Referrer-Policy**: Control de información de referencia
+- **Permissions-Policy**: Control de APIs del navegador
+
+### Configuración en Nginx
+
+El archivo `nginx.conf` incluye todas las configuraciones de seguridad necesarias, incluyendo:
+- Headers de seguridad
+- Compresión gzip
+- Cache de assets estáticos
+- Protección contra archivos ocultos
+
+### SEO
+
+- ✅ `robots.txt` configurado
+- ✅ `sitemap.xml` incluido
+- ✅ Meta tags Open Graph para redes sociales
+- ✅ Meta tags Twitter Cards
+- ✅ Canonical URL
+- ✅ `security.txt` para reportes de seguridad
 
 ## 📄 Licencia
 

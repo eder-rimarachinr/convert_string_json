@@ -1,0 +1,8 @@
+Contact: ederrr2802@gmail.com
+Expires: 2026-12-31T23:59:59.000Z
+Preferred-Languages: en, es
+Canonical: https://jsonconverter.eder-rimarachin.com/.well-known/security.txt
+
+# Security Policy
+Please report security vulnerabilities to ederrr2802@gmail.com
+We appreciate responsible disclosure and will respond within 48 hours.

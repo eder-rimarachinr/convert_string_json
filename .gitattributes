@@ -1,0 +1,36 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Web files
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+
+# Docker files
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+.dockerignore text eol=lf
+
+# Config files
+*.conf text eol=lf
+*.config text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Images
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text eol=lf
+
+# Fonts
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

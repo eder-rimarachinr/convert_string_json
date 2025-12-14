@@ -208,7 +208,7 @@ class JSONFormatter {
 
     // Add missing closing braces/brackets at the end
     const missingBraces = openBraces - closeBraces;
-    const missingBrackets = openBrackets - closeBraces;
+    const missingBrackets = openBrackets - closeBrackets;
 
     if (missingBraces > 0) {
       str += '}'.repeat(missingBraces);

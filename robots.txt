@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://jsonconverter.eder-rimarachin.com/sitemap.xml
+
+# Crawl delay (optional, in seconds)
+Crawl-delay: 1

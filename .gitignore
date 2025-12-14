@@ -1,1 +1,92 @@
-/node_modules
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE and Editor folders
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.backup
+
+# Build outputs
+dist/
+build/
+out/
+*.log
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+*.test.js.snap
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.cache
+
+# Docker (optional - keep if you don't want to track these)
+# .dockerignore
+# docker-compose.override.yml
+
+# System Files
+*.pid
+*.seed
+*.pid.lock
+
+# macOS
+.AppleDouble
+.LSOverride
+Icon
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+$RECYCLE.BIN/
+ehthumbs_vista.db
+
+# Linux
+.directory
+.Trash-*
+
+# Git
+*.orig
