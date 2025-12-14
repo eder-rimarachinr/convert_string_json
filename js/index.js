@@ -78,49 +78,80 @@ class JSONFormatter {
   correctFormat(jsonString) {
     let corrected = jsonString.trim();
 
-    // Remove outer quotes if present
-    if ((corrected.startsWith('"') && corrected.endsWith('"')) ||
-        (corrected.startsWith("'") && corrected.endsWith("'"))) {
+    // First, try to detect if it's a JSON string (wrapped in quotes)
+    const isJSONString = (corrected.startsWith('"') && corrected.endsWith('"')) ||
+                         (corrected.startsWith("'") && corrected.endsWith("'"));
+
+    if (isJSONString) {
+      // Remove outer quotes
       corrected = corrected.slice(1, -1);
+
+      // Unescape quotes
+      corrected = corrected.replace(/\\"/g, '"');
+      corrected = corrected.replace(/\\'/g, "'");
+
+      // Remove unnecessary escapes (but keep \n, \t, \r, \\)
+      corrected = corrected.replace(/\\([^"'\\ntr])/g, '$1');
     }
 
-    // Unescape quotes
-    corrected = corrected.replace(/\\"/g, '"');
-    corrected = corrected.replace(/\\'/g, "'");
-
-    // Remove unnecessary escapes
-    corrected = corrected.replace(/\\([^"'\\])/g, '$1');
-
-    // Remove trailing commas before closing braces/brackets
+    // Remove trailing commas before closing braces/brackets (common error)
     corrected = corrected.replace(/,(\s*[}\]])/g, '$1');
 
-    // Second pass for outer quotes (in case there were nested escapes)
-    if ((corrected.startsWith('"') && corrected.endsWith('"')) ||
-        (corrected.startsWith("'") && corrected.endsWith("'"))) {
-      corrected = corrected.slice(1, -1);
-    }
-
     return corrected;
+  }
+
+  /**
+   * Get better error message with context
+   */
+  getErrorContext(input, position) {
+    const start = Math.max(0, position - 30);
+    const end = Math.min(input.length, position + 30);
+    const context = input.substring(start, end);
+    const pointer = ' '.repeat(Math.min(30, position - start)) + '^';
+    return `\n\nError cerca de:\n...${context}...\n   ${pointer}`;
   }
 
   /**
    * Parse and format JSON string
    */
   format(jsonString) {
+    const input = jsonString.trim();
+
+    // Try parsing the input directly first (for valid JSON)
     try {
-      const corrected = this.correctFormat(jsonString);
-      const parsed = JSON.parse(corrected);
+      const parsed = JSON.parse(input);
       this.formattedJSON = JSON.stringify(parsed, null, 4);
       return {
         success: true,
         formatted: this.formattedJSON,
         parsed: parsed
       };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+    } catch (firstError) {
+      // If direct parsing fails, try with corrections (for JSON strings)
+      try {
+        const corrected = this.correctFormat(input);
+        const parsed = JSON.parse(corrected);
+        this.formattedJSON = JSON.stringify(parsed, null, 4);
+        return {
+          success: true,
+          formatted: this.formattedJSON,
+          parsed: parsed
+        };
+      } catch (secondError) {
+        // Extract position from error message
+        const match = secondError.message.match(/position (\d+)/);
+        const position = match ? parseInt(match[1]) : -1;
+
+        let errorMsg = secondError.message;
+        if (position >= 0) {
+          errorMsg += this.getErrorContext(input, position);
+        }
+
+        return {
+          success: false,
+          error: errorMsg
+        };
+      }
     }
   }
 
@@ -139,7 +170,7 @@ class JSONFormatter {
     lines.forEach((line, index) => {
       const hasToggle = /[{\[]/.test(line);
       const toggleHTML = hasToggle
-        ? `<span class="toggle toggleIcon" data-line="${index}">▶</span>`
+        ? `<span class="toggle toggleIcon" data-line="${index}">▼</span>`
         : '';
 
       const lineNumber = `<span class="line-number">${index + 1}</span>`;
@@ -323,8 +354,10 @@ class JSONConverterApp {
         this.elements.outputPre.innerHTML = highlighted;
         this.toast.success('JSON converted successfully!');
       } else {
-        this.toast.error(`Invalid JSON: ${result.error}`);
-        this.elements.outputPre.innerHTML = '';
+        // Show error in output for better visibility
+        const errorDisplay = `<div style="color: #f56565; padding: 16px; font-family: monospace; white-space: pre-wrap; line-height: 1.6;">❌ Invalid JSON\n\n${result.error}\n\n💡 Tips:\n• Check for missing commas or brackets\n• Verify all quotes are properly closed\n• Use a JSON validator if needed</div>`;
+        this.elements.outputPre.innerHTML = errorDisplay;
+        this.toast.error('Invalid JSON - Check output for details', 6000);
       }
 
       // Remove loading state
@@ -360,10 +393,10 @@ class JSONConverterApp {
   handleToggle(toggleIcon) {
     const lineIndex = parseInt(toggleIcon.getAttribute('data-line'));
     const currentIcon = toggleIcon.textContent;
-    const isExpanded = currentIcon === '▼';
+    const isCollapsed = currentIcon === '▶';
 
     // Toggle icon
-    toggleIcon.textContent = isExpanded ? '▶' : '▼';
+    toggleIcon.textContent = isCollapsed ? '▼' : '▶';
 
     if (!this.formatter.formattedJSON) return;
 
@@ -376,10 +409,12 @@ class JSONConverterApp {
     for (let i = startIndex + 1; i <= endIndex; i++) {
       const lineContainer = document.querySelector(`.json-line[data-line-index="${i}"]`);
       if (lineContainer) {
-        if (isExpanded) {
-          lineContainer.classList.add('hidden');
-        } else {
+        if (isCollapsed) {
+          // Expandir: mostrar las líneas
           lineContainer.classList.remove('hidden');
+        } else {
+          // Colapsar: ocultar las líneas
+          lineContainer.classList.add('hidden');
         }
       }
     }
