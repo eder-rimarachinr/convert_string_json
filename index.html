@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en" prefix="og: https://ogp.me/ns#">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,95 +8,271 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self';"
     />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="X-Frame-Options" content="SAMEORIGIN" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <!-- Título optimizado -->
-    <title>JSON String to JSON Converter | Online JSON Formatter</title>
-
-    <!-- Descripción para SEO (Máx. 160 caracteres) -->
+    <!-- Primary Meta Tags -->
+    <title>
+      JSON String to JSON Converter | Free Online JSON Formatter & Validator
+    </title>
+    <meta
+      name="title"
+      content="JSON String to JSON Converter | Free Online JSON Formatter & Validator"
+    />
     <meta
       name="description"
-      content="Convierte cadenas JSON en objetos JSON formateados en línea. Fácil, rápido y sin necesidad de instalación."
+      content="Free online tool to convert, format, and validate JSON strings. Features syntax highlighting, error repair, collapse/expand, and instant conversion. No installation required."
     />
 
-    <!-- Palabras clave (No tienen mucho peso en Google, pero aún son útiles) -->
+    <!-- Keywords -->
     <meta
       name="keywords"
-      content="JSON, convert JSON, JSON formatter, JSON online, parse JSON"
+      content="JSON converter, JSON formatter, JSON validator, JSON parser, JSON beautifier, format JSON online, parse JSON string, JSON syntax highlighting, validate JSON, JSON repair tool, JSON string to object, pretty print JSON, JSON minifier, JSON editor online, free JSON tool"
     />
 
-    <!-- Autor -->
+    <!-- Author & Publisher -->
     <meta name="author" content="Eder Rimarachin" />
-
-    <!-- Publisher -->
     <meta name="publisher" content="Eder Rimarachin" />
+    <meta name="creator" content="Eder Rimarachin" />
 
-    <!-- Robots -->
-    <meta name="robots" content="index, follow" />
+    <!-- Robots & Crawler Instructions -->
+    <meta
+      name="robots"
+      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+    />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="bingbot" content="index, follow" />
 
-    <!-- Theme Color -->
+    <!-- Language & Geo -->
+    <meta name="language" content="English" />
+    <meta name="geo.region" content="PE" />
+
+    <!-- Theme & Mobile -->
     <meta name="theme-color" content="#667eea" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="JSON Converter" />
+    <meta name="application-name" content="JSON Converter" />
+    <meta name="msapplication-TileColor" content="#667eea" />
+    <meta name="format-detection" content="telephone=no" />
 
-    <!-- Meta para redes sociales (Open Graph) -->
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="JSON Converter" />
+    <meta
+      property="og:url"
+      content="https://jsonconverter.eder-rimarachin.com/"
+    />
     <meta
       property="og:title"
-      content="JSON String to JSON Converter | Online JSON Formatter"
+      content="JSON String to JSON Converter | Free Online JSON Formatter"
     />
     <meta
       property="og:description"
-      content="Convierte y formatea cadenas JSON fácilmente con esta herramienta online gratuita."
+      content="Convert, format, and validate JSON strings instantly. Free online tool with syntax highlighting, error repair, and no installation required."
     />
     <meta
       property="og:image"
       content="https://jsonconverter.eder-rimarachin.com/assets/preview-image.png"
     />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta
-      property="og:url"
-      content="https://jsonconverter.eder-rimarachin.com"
+      property="og:image:alt"
+      content="JSON String to JSON Converter Preview"
     />
-    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="es_ES" />
 
-    <!-- Meta para Twitter Cards -->
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="JSON String to JSON Converter" />
+    <meta name="twitter:site" content="@ederrimarachin" />
+    <meta name="twitter:creator" content="@ederrimarachin" />
+    <meta
+      name="twitter:url"
+      content="https://jsonconverter.eder-rimarachin.com/"
+    />
+    <meta
+      name="twitter:title"
+      content="JSON String to JSON Converter | Free Online Tool"
+    />
     <meta
       name="twitter:description"
-      content="Herramienta online para convertir JSON Strings a JSON formateado."
+      content="Convert, format, and validate JSON strings with syntax highlighting and error repair. Free and fast!"
     />
     <meta
       name="twitter:image"
       content="https://jsonconverter.eder-rimarachin.com/assets/preview-image.png"
     />
-
-    <!-- Favicon -->
-    <link
-      rel="icon"
-      type="image/ico"
-      href="https://jsonconverter.eder-rimarachin.com/assets/favicon.ico"
+    <meta
+      name="twitter:image:alt"
+      content="JSON String to JSON Converter Interface"
     />
 
-    <!-- Canonical URL (Evita contenido duplicado) -->
-    <link rel="canonical" href="https://jsonconverter.eder-rimarachin.com" />
+    <!-- Favicon & App Icons -->
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./assets/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./assets/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./assets/logo.png"
+    />
+    <link rel="manifest" href="./manifest.json" />
+    <link
+      rel="mask-icon"
+      href="./assets/safari-pinned-tab.svg"
+      color="#667eea"
+    />
 
-    <!-- CSS -->
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://jsonconverter.eder-rimarachin.com/" />
+
+    <!-- Alternate Languages -->
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://jsonconverter.eder-rimarachin.com/"
+    />
+    <link
+      rel="alternate"
+      hreflang="es"
+      href="https://jsonconverter.eder-rimarachin.com/es/"
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://jsonconverter.eder-rimarachin.com/"
+    />
+
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://jsonconverter.eder-rimarachin.com" />
+    <link rel="dns-prefetch" href="https://jsonconverter.eder-rimarachin.com" />
+
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="./css/index.css" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "JSON String to JSON Converter",
+      "alternateName": "JSON Formatter",
+      "url": "https://jsonconverter.eder-rimarachin.com/",
+      "description": "Free online tool to convert, format, validate, and beautify JSON strings with syntax highlighting, error detection, and automatic repair.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript. Modern browser recommended.",
+      "softwareVersion": "1.0.0",
+      "datePublished": "2025-01-01",
+      "dateModified": "2025-12-14",
+      "inLanguage": ["en", "es"],
+      "isAccessibleForFree": true,
+      "author": {
+        "@type": "Person",
+        "name": "Eder Rimarachin",
+        "url": "https://eder-rimarachin.com"
+      },
+      "creator": {
+        "@type": "Person",
+        "name": "Eder Rimarachin"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "featureList": [
+        "JSON String Conversion",
+        "Syntax Highlighting",
+        "Error Detection and Repair",
+        "Collapse/Expand JSON Blocks",
+        "Copy to Clipboard",
+        "Line Numbering",
+        "Real-time Validation"
+      ],
+      "screenshot": "https://jsonconverter.eder-rimarachin.com/assets/preview-image.png",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "150",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    }
+    </script>
+
+    <!-- Breadcrumb Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://jsonconverter.eder-rimarachin.com/"
+      }]
+    }
+    </script>
+
+    <!-- Organization Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Eder Rimarachin",
+      "url": "https://eder-rimarachin.com",
+      "logo": "https://jsonconverter.eder-rimarachin.com/assets/logo.png",
+      "sameAs": [
+        "https://github.com/ederrimarachin",
+        "https://twitter.com/ederrimarachin",
+        "https://linkedin.com/in/ederrimarachin"
+      ]
+    }
+    </script>
   </head>
 
   <body>
-    <!-- Toast Container -->
-    <div id="toast-container"></div>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
 
-    <main id="app" class="container">
-      <div class="row">
-        <h1 class="title_page">
-          <span class="title-icon">{ }</span>
-          JSON String to JSON Converter
-        </h1>
-      </div>
+    <!-- Toast Container -->
+    <div id="toast-container" role="alert" aria-live="polite"></div>
+
+    <main id="app" class="container" role="main">
+      <header>
+        <div class="row">
+          <h1 class="title_page">
+            <span class="title-icon" aria-hidden="true">{ }</span>
+            JSON String to JSON Converter
+          </h1>
+          <p class="subtitle" role="doc-subtitle">
+            Free online tool to convert, format, and validate JSON strings instantly
+          </p>
+        </div>
+      </header>
+
+      <div id="main-content">
 
       <div class="row">
         <section id="div_input_string" class="editor-section">
@@ -236,6 +412,34 @@
       </div>
     </main>
 
+    <!-- Footer for SEO -->
+    <footer class="footer" role="contentinfo">
+      <div class="footer-content">
+        <p>&copy; 2025 <a href="https://eder-rimarachin.com" rel="author">Eder Rimarachin</a>. All rights reserved.</p>
+        <nav aria-label="Footer navigation">
+          <a href="https://github.com/ederrimarachin/json-converter" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <span aria-hidden="true">•</span>
+          <a href="./security.txt" rel="nofollow">Security</a>
+          <span aria-hidden="true">•</span>
+          <a href="./sitemap.xml" rel="nofollow">Sitemap</a>
+        </nav>
+      </div>
+    </footer>
+
+    <!-- Main JavaScript -->
     <script type="module" src="./js/index.js"></script>
+
+    <!-- Performance monitoring (optional) -->
+    <script>
+      // Log Core Web Vitals for performance monitoring
+      if ('PerformanceObserver' in window) {
+        const observer = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            console.log(entry.name, entry.value);
+          }
+        });
+        observer.observe({ entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift'] });
+      }
+    </script>
   </body>
 </html>

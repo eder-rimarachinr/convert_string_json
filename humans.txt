@@ -1,0 +1,17 @@
+/* TEAM */
+Developer: Eder Rimarachin
+Site: https://eder-rimarachin.com
+Twitter: @ederrimarachin
+Location: Peru
+
+/* THANKS */
+Open Source Community
+Stack Overflow Contributors
+
+/* SITE */
+Last update: 2025/12/14
+Language: English / Spanish
+Doctype: HTML5
+IDE: Visual Studio Code
+Components: Vanilla JavaScript, CSS3, HTML5
+Standards: W3C, WCAG 2.1, SEO Best Practices
