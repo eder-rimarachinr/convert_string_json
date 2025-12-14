@@ -33,7 +33,7 @@ RUN touch /var/run/nginx.pid && \
 EXPOSE 80
 
 # Healthcheck con curl
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://127.0.0.1/ || exit 1
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+# CMD curl -f http://127.0.0.1/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
