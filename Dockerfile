@@ -17,9 +17,11 @@ COPY css/ /usr/share/nginx/html/css/
 COPY js/ /usr/share/nginx/html/js/
 COPY assets/ /usr/share/nginx/html/assets/
 COPY manifest.json /usr/share/nginx/html/
+COPY browserconfig.xml /usr/share/nginx/html/
 COPY security.txt /usr/share/nginx/html/
 COPY robots.txt /usr/share/nginx/html/
 COPY sitemap.xml /usr/share/nginx/html/
+COPY humans.txt /usr/share/nginx/html/
 
 # Ajuste de permisos (Buena práctica)
 RUN touch /var/run/nginx.pid && \
