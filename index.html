@@ -49,7 +49,7 @@
     <meta name="geo.region" content="PE" />
 
     <!-- Theme & Mobile -->
-    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" content="#e8ecf0" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
@@ -58,7 +58,7 @@
     />
     <meta name="apple-mobile-web-app-title" content="JSON Converter" />
     <meta name="application-name" content="JSON Converter" />
-    <meta name="msapplication-TileColor" content="#667eea" />
+    <meta name="msapplication-TileColor" content="#e8ecf0" />
     <meta name="format-detection" content="telephone=no" />
 
     <!-- Open Graph / Facebook -->
@@ -162,6 +162,9 @@
     <!-- Stylesheet -->
     <link rel="stylesheet" href="/css/index.css" />
 
+    <!-- Applies the saved theme before first paint -->
+    <script src="/js/theme.js"></script>
+
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
     {
@@ -237,7 +240,7 @@
       "url": "https://eder-rimarachin.com",
       "logo": "https://jsonconverter.eder-rimarachin.com/assets/logo.png",
       "sameAs": [
-        "https://github.com/ederrimarachin",
+        "https://github.com/eder-rimarachinr",
         "https://twitter.com/ederrimarachin",
         "https://linkedin.com/in/ederrimarachin"
       ]
@@ -260,9 +263,22 @@
             JSON String to JSON Converter
           </h1>
           <p class="subtitle" role="doc-subtitle">
-            Free online tool to convert, format, and validate JSON strings instantly
+            Paste regular JSON or an escaped JSON string, like the ones you find in logs,
+            API responses or database columns. It gets decoded, validated and formatted
+            with collapsible blocks, right in your browser.
           </p>
         </div>
+        <button id="theme_toggle" type="button" class="icon-btn theme-toggle" aria-label="Switch to dark theme" title="Switch to dark theme">
+          <!-- moon: shown in light theme -->
+          <svg class="icon-moon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+          </svg>
+          <!-- sun: shown in dark theme -->
+          <svg class="icon-sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+          </svg>
+        </button>
       </header>
 
       <div id="main-content">
@@ -272,7 +288,11 @@
           <div class="form_inp">
             <div class="label_inp">
               <label for="input_string">
-                <span class="label-icon">📥</span> INPUT
+                <svg class="label-icon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="8" y="2" width="8" height="4" rx="1" />
+                  <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2" />
+                </svg>
+                INPUT
               </label>
               <div class="actions">
                 <button
@@ -321,18 +341,16 @@
               placeholder='Paste your JSON string here... e.g., "{\"name\":\"John\"}"'
               spellcheck="false"
             ></textarea>
-          </div>
-
-          <div class="bttn_convert">
-            <button
-              type="button"
-              id="btn_convertir"
-              class="btn btn-primary"
-              aria-label="Convert JSON"
-            >
-              <span class="btn-text">Convert JSON</span>
-              <span class="btn-icon">→</span>
-            </button>
+            <div class="panel-footer">
+              <span class="hint">or press <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+              <button
+                type="button"
+                id="btn_convertir"
+                class="btn btn-primary"
+              >
+                <span class="btn-text">Convert JSON</span>
+              </button>
+            </div>
           </div>
         </section>
 
@@ -340,7 +358,11 @@
           <div class="form_out">
             <div class="label_out">
               <span id="output_label" class="label">
-                <span class="label-icon">📤</span> OUTPUT
+                <svg class="label-icon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 6H8M21 12h-8M21 18h-8" />
+                  <path d="M3 6v4a2 2 0 002 2h3M3 10v6a2 2 0 002 2h3" />
+                </svg>
+                OUTPUT
               </span>
               <div class="actions">
                 <button
@@ -400,9 +422,57 @@
               </div>
             </div>
             <pre id="output_json" class="json-output" aria-labelledby="output_label"></pre>
+            <div class="panel-footer">
+              <span id="output_status" class="status" role="status">Nothing converted yet</span>
+            </div>
           </div>
         </section>
       </div>
+
+      <section class="about" aria-label="About this tool">
+        <div class="about-col">
+          <h2>How to use it</h2>
+          <ol class="steps">
+            <li>Paste your JSON or escaped JSON string into <strong>Input</strong>.</li>
+            <li>Press <strong>Convert JSON</strong>, or <kbd>Ctrl</kbd> + <kbd>Enter</kbd>.</li>
+            <li>Fold large objects and arrays with the arrows next to the line numbers, then copy the result.</li>
+          </ol>
+
+          <h2>What you can paste</h2>
+          <dl class="examples">
+            <dt>Regular JSON</dt>
+            <dd><code>{"name":"John","age":30}</code></dd>
+            <dt>Escaped JSON string (logs, APIs, database columns)</dt>
+            <dd><code>"{\"name\":\"John\",\"age\":30}"</code></dd>
+            <dt>Double-escaped string</dt>
+            <dd><code>"\"{\\\"name\\\":\\\"John\\\"}\""</code></dd>
+            <dt>Single-quoted JavaScript string</dt>
+            <dd><code>'{"name":"John"}'</code></dd>
+          </dl>
+        </div>
+
+        <div class="about-col">
+          <h2>Your data stays exactly as it is</h2>
+          <p>
+            Only whitespace changes. Large numbers such as <code>12345678901234567890</code>,
+            key order, duplicate keys and escape sequences are kept exactly as you wrote them,
+            so the output is safe to paste back into your code.
+          </p>
+
+          <h2>Small mistakes, clearly flagged</h2>
+          <p>
+            Trailing commas and missing closing brackets are fixed automatically, and the output
+            tells you exactly what was changed. Anything else is reported with its line, column
+            and the surrounding text so you can find it quickly.
+          </p>
+
+          <h2>Private by design</h2>
+          <p>
+            Everything runs in your browser. Your JSON is never uploaded, logged or stored:
+            it doesn't leave your device.
+          </p>
+        </div>
+      </section>
       </div>
     </main>
 
@@ -411,11 +481,13 @@
       <div class="footer-content">
         <p>&copy; 2025 <a href="https://eder-rimarachin.com" rel="author">Eder Rimarachin</a>. All rights reserved.</p>
         <nav aria-label="Footer navigation">
-          <a href="https://github.com/ederrimarachin/json-converter" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://github.com/eder-rimarachinr/convert_string_json" target="_blank" rel="noopener noreferrer">GitHub</a>
           <span aria-hidden="true">•</span>
-          <a href="./security.txt" rel="nofollow">Security</a>
+          <a href="https://github.com/eder-rimarachinr/convert_string_json/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
           <span aria-hidden="true">•</span>
-          <a href="./sitemap.xml" rel="nofollow">Sitemap</a>
+          <a href="/.well-known/security.txt" rel="nofollow">Security</a>
+          <span aria-hidden="true">•</span>
+          <a href="/sitemap.xml" rel="nofollow">Sitemap</a>
         </nav>
       </div>
     </footer>

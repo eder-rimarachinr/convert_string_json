@@ -17,6 +17,32 @@ function el(tag, className, text) {
   return node;
 }
 
+// Stroke icons (24x24 grid, inherit currentColor so they follow the theme)
+const ICON_PATHS = {
+  check: ['M20 6L9 17l-5-5'],
+  x: ['M18 6L6 18', 'M6 6l12 12'],
+  alert: ['M21.73 18l-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3', 'M12 9v4', 'M12 17h.01'],
+  circleX: ['M22 12a10 10 0 11-20 0 10 10 0 0120 0z', 'M15 9l-6 6', 'M9 9l6 6']
+};
+
+function icon(name, size = 16) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  for (const [attr, value] of Object.entries({
+    class: 'icon', width: size, height: size, viewBox: '0 0 24 24', fill: 'none',
+    stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round',
+    'stroke-linejoin': 'round', 'aria-hidden': 'true'
+  })) {
+    svg.setAttribute(attr, value);
+  }
+  for (const d of ICON_PATHS[name]) {
+    const path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', d);
+    svg.appendChild(path);
+  }
+  return svg;
+}
+
 // ============================================
 // TOAST NOTIFICATION SYSTEM
 // ============================================
@@ -27,17 +53,20 @@ class ToastManager {
 
   show(message, type = 'success', duration = 3000) {
     const icons = {
-      success: '✓',
-      error: '✕',
-      warning: '⚠'
+      success: 'check',
+      error: 'x',
+      warning: 'alert'
     };
 
     const toast = el('div', `toast ${type}`);
-    const closeBtn = el('button', 'toast-close', '×');
+    const closeBtn = el('button', 'toast-close');
+    closeBtn.appendChild(icon('x', 16));
     closeBtn.type = 'button';
     closeBtn.setAttribute('aria-label', 'Close');
+    const toastIcon = el('span', 'toast-icon');
+    toastIcon.appendChild(icon(icons[type] || icons.success, 20));
     toast.append(
-      el('span', 'toast-icon', icons[type] || icons.success),
+      toastIcon,
       el('span', 'toast-message', message),
       closeBtn
     );
@@ -97,7 +126,9 @@ class JSONRenderer {
 
     if (result.warnings.length) {
       const note = el('div', 'json-warning');
-      note.append(el('strong', null, '⚠ Input was repaired: '), result.warnings.join(' · '));
+      const title = el('strong', null, 'Input was repaired:');
+      title.prepend(icon('alert', 15));
+      note.append(title, ' ' + result.warnings.join(' · '));
       fragment.appendChild(note);
     }
 
@@ -134,7 +165,9 @@ class JSONRenderer {
     this.reset();
 
     const box = el('div', 'json-error');
-    box.appendChild(el('div', 'json-error-title', '❌ Invalid JSON'));
+    const title = el('div', 'json-error-title', 'Invalid JSON');
+    title.prepend(icon('circleX', 18));
+    box.appendChild(title);
     box.appendChild(el('div', null, error.message));
 
     if (error.line !== null) {
@@ -142,7 +175,7 @@ class JSONRenderer {
       box.appendChild(el('pre', 'json-error-context', `${error.context}\n${error.pointer}`));
     }
 
-    const tips = el('div', 'json-error-tips', '💡 Tips:');
+    const tips = el('div', 'json-error-tips', 'Tips:');
     const list = el('ul');
     for (const tip of [
       'Check for missing commas or brackets',
@@ -248,7 +281,8 @@ class JSONConverterApp {
       copyOutputBtn: document.getElementById('copy_output'),
       clearInputBtn: document.getElementById('clear_input'),
       collapseAllBtn: document.getElementById('collapse_all'),
-      expandAllBtn: document.getElementById('expand_all')
+      expandAllBtn: document.getElementById('expand_all'),
+      status: document.getElementById('output_status')
     };
 
     this.renderer = new JSONRenderer(this.elements.outputPre);
@@ -313,21 +347,31 @@ class JSONConverterApp {
         if (result.success) {
           this.formatted = result.formatted;
           this.renderer.render(result);
+          const lines = `${result.lines.length} line${result.lines.length === 1 ? '' : 's'}`;
 
           if (result.warnings.length) {
+            this.setStatus(`Repaired, ${lines}. Review the changes before using it`, 'warn');
             this.toast.warning('JSON repaired - review the changes before using it', 6000);
           } else {
+            this.setStatus(`Valid JSON, ${lines}`, 'ok');
             this.toast.success('JSON converted successfully!');
           }
         } else {
           this.formatted = '';
           this.renderer.renderError(result.error);
+          this.setStatus(
+            result.error.line !== null
+              ? `Invalid JSON at line ${result.error.line}, column ${result.error.column}`
+              : result.error.message,
+            'error'
+          );
           this.toast.error('Invalid JSON - Check output for details', 6000);
         }
       } catch (error) {
         // e.g. output too large to build as a string
         this.formatted = '';
         this.renderer.reset();
+        this.setStatus('Could not process this input', 'error');
         this.toast.error('Could not process this input');
         console.error('Format error:', error);
       } finally {
@@ -359,8 +403,14 @@ class JSONConverterApp {
     this.elements.inputTextarea.value = '';
     this.formatted = '';
     this.renderer.reset();
+    this.setStatus('Nothing converted yet');
     this.elements.inputTextarea.focus();
     this.toast.success('Cleared!');
+  }
+
+  setStatus(text, kind = '') {
+    this.elements.status.textContent = text;
+    this.elements.status.className = kind ? `status is-${kind}` : 'status';
   }
 }
 

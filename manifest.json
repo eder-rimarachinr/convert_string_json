@@ -4,8 +4,8 @@
   "description": "Free online tool to convert, format, and validate JSON strings",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f1419",
-  "theme_color": "#667eea",
+  "background_color": "#e8ecf0",
+  "theme_color": "#e8ecf0",
   "orientation": "any",
   "icons": [
     {
