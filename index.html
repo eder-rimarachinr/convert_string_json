@@ -4,14 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Security Headers -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Security: the full header set (incl. frame-ancestors, nosniff, HSTS) is sent by nginx.
+         This meta CSP is a fallback for hosts that serve the file without those headers. -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
     />
-    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
     <!-- Primary Meta Tags -->
@@ -341,9 +339,9 @@
         <section id="div_output_json" class="editor-section">
           <div class="form_out">
             <div class="label_out">
-              <label for="output_json">
+              <span id="output_label" class="label">
                 <span class="label-icon">📤</span> OUTPUT
-              </label>
+              </span>
               <div class="actions">
                 <button
                   id="collapse_all"
@@ -401,9 +399,10 @@
                 </button>
               </div>
             </div>
-            <pre id="output_json" class="json-output"></pre>
+            <pre id="output_json" class="json-output" aria-labelledby="output_label"></pre>
           </div>
         </section>
+      </div>
       </div>
     </main>
 
@@ -423,18 +422,5 @@
 
     <!-- Main JavaScript -->
     <script type="module" src="/js/index.js"></script>
-
-    <!-- Performance monitoring (optional) -->
-    <script>
-      // Log Core Web Vitals for performance monitoring
-      if ('PerformanceObserver' in window) {
-        const observer = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            console.log(entry.name, entry.value);
-          }
-        });
-        observer.observe({ entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift'] });
-      }
-    </script>
   </body>
 </html>

@@ -12,6 +12,7 @@ RUN rm -rf /usr/share/nginx/html/*
 
 # Copia de configs y archivos
 COPY nginx.conf /etc/nginx/nginx.conf
+COPY security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY index.html /usr/share/nginx/html/
 COPY css/ /usr/share/nginx/html/css/
 COPY js/ /usr/share/nginx/html/js/
@@ -19,6 +20,7 @@ COPY assets/ /usr/share/nginx/html/assets/
 COPY manifest.json /usr/share/nginx/html/
 COPY browserconfig.xml /usr/share/nginx/html/
 COPY security.txt /usr/share/nginx/html/
+COPY security.txt /usr/share/nginx/html/.well-known/security.txt
 COPY robots.txt /usr/share/nginx/html/
 COPY sitemap.xml /usr/share/nginx/html/
 COPY humans.txt /usr/share/nginx/html/

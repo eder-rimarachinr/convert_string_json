@@ -2,7 +2,20 @@
  * JSON String to JSON Converter
  * Modern ES6+ implementation without jQuery
  * @author Eder Rimarachin
+ *
+ * Security note: user-controlled text is only ever written with textContent.
+ * Never use innerHTML here.
  */
+
+import { formatJSON } from './json-core.js';
+
+// Small DOM helper: el('span', 'cls', 'text')
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
 
 // ============================================
 // TOAST NOTIFICATION SYSTEM
@@ -13,25 +26,25 @@ class ToastManager {
   }
 
   show(message, type = 'success', duration = 3000) {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-
     const icons = {
       success: '✓',
       error: '✕',
       warning: '⚠'
     };
 
-    toast.innerHTML = `
-      <span class="toast-icon">${icons[type] || icons.success}</span>
-      <span class="toast-message">${message}</span>
-      <button class="toast-close" aria-label="Close">×</button>
-    `;
+    const toast = el('div', `toast ${type}`);
+    const closeBtn = el('button', 'toast-close', '×');
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Close');
+    toast.append(
+      el('span', 'toast-icon', icons[type] || icons.success),
+      el('span', 'toast-message', message),
+      closeBtn
+    );
 
     this.container.appendChild(toast);
 
     // Close button handler
-    const closeBtn = toast.querySelector('.toast-close');
     closeBtn.addEventListener('click', () => this.remove(toast));
 
     // Auto remove after duration
@@ -44,11 +57,7 @@ class ToastManager {
 
   remove(toast) {
     toast.style.animation = 'slideOut 0.3s ease';
-    setTimeout(() => {
-      if (toast.parentNode) {
-        toast.parentNode.removeChild(toast);
-      }
-    }, 300);
+    setTimeout(() => toast.remove(), 300);
   }
 
   success(message, duration = 3000) {
@@ -65,241 +74,142 @@ class ToastManager {
 }
 
 // ============================================
-// JSON FORMATTER & PARSER
+// JSON OUTPUT RENDERER (highlighting + collapse)
 // ============================================
-class JSONFormatter {
-  constructor() {
-    this.formattedJSON = null;
+class JSONRenderer {
+  constructor(container) {
+    this.container = container;
+    this.reset();
   }
 
-  /**
-   * Corrects common JSON string formatting issues
-   */
-  correctFormat(jsonString) {
-    let corrected = jsonString.trim();
+  reset() {
+    this.lines = [];
+    this.lineElements = [];
+    this.collapsed = new Set();
+    this.container.replaceChildren();
+  }
 
-    // First, try to detect if it's a JSON string (wrapped in quotes)
-    const isJSONString = (corrected.startsWith('"') && corrected.endsWith('"')) ||
-                         (corrected.startsWith("'") && corrected.endsWith("'"));
+  render(result) {
+    this.reset();
+    this.lines = result.lines;
 
-    if (isJSONString) {
-      // Remove outer quotes
-      corrected = corrected.slice(1, -1);
+    const fragment = document.createDocumentFragment();
 
-      // Unescape quotes
-      corrected = corrected.replace(/\\"/g, '"');
-      corrected = corrected.replace(/\\'/g, "'");
-
-      // Remove unnecessary escapes (but keep \n, \t, \r, \\)
-      corrected = corrected.replace(/\\([^"'\\ntr])/g, '$1');
+    if (result.warnings.length) {
+      const note = el('div', 'json-warning');
+      note.append(el('strong', null, '⚠ Input was repaired: '), result.warnings.join(' · '));
+      fragment.appendChild(note);
     }
 
-    // Remove trailing commas before closing braces/brackets (common error)
-    corrected = corrected.replace(/,(\s*[}\]])/g, '$1');
+    result.lines.forEach((line, index) => {
+      const row = el('div', 'json-line');
+      row.dataset.lineIndex = index;
 
-    return corrected;
-  }
-
-  /**
-   * Get better error message with context
-   */
-  getErrorContext(input, position) {
-    const start = Math.max(0, position - 30);
-    const end = Math.min(input.length, position + 30);
-    const context = input.substring(start, end);
-    const pointer = ' '.repeat(Math.min(30, position - start)) + '^';
-    return `\n\nError cerca de:\n...${context}...\n   ${pointer}`;
-  }
-
-  /**
-   * Parse and format JSON string
-   */
-  format(jsonString) {
-    const input = jsonString.trim();
-
-    // First, detect if it's a JSON string (wrapped in quotes with escaped content)
-    const isJSONString = (input.startsWith('"') && input.endsWith('"') && input.includes('\\')) ||
-                         (input.startsWith("'") && input.endsWith("'") && input.includes('\\'));
-
-    // If it's a JSON string, try to unescape it first
-    if (isJSONString) {
-      try {
-        const corrected = this.correctFormat(input);
-        const parsed = JSON.parse(corrected);
-        this.formattedJSON = JSON.stringify(parsed, null, 4);
-        return {
-          success: true,
-          formatted: this.formattedJSON,
-          parsed: parsed
-        };
-      } catch (escapedError) {
-        // If unescaping fails, continue to try direct parse
+      if (line.end !== -1) {
+        const toggle = el('button', 'toggle toggleIcon', '▼');
+        toggle.type = 'button';
+        toggle.dataset.line = index;
+        toggle.setAttribute('aria-expanded', 'true');
+        toggle.setAttribute('aria-label', `Collapse block at line ${index + 1}`);
+        row.appendChild(toggle);
+      } else {
+        row.appendChild(el('span', 'toggle-spacer'));
       }
-    }
 
-    // Try parsing the input directly (for regular JSON)
-    try {
-      const parsed = JSON.parse(input);
-      this.formattedJSON = JSON.stringify(parsed, null, 4);
-      return {
-        success: true,
-        formatted: this.formattedJSON,
-        parsed: parsed
-      };
-    } catch (directError) {
-      // Last attempt: try with corrections (trailing commas, etc)
-      try {
-        const corrected = this.correctFormat(input);
-        const parsed = JSON.parse(corrected);
-        this.formattedJSON = JSON.stringify(parsed, null, 4);
-        return {
-          success: true,
-          formatted: this.formattedJSON,
-          parsed: parsed
-        };
-      } catch (finalError) {
-        // Último intento: usar repairJSON para corregir errores comunes
-        try {
-          const repaired = this.repairJSON(input);
-          const parsed = JSON.parse(repaired);
-          this.formattedJSON = JSON.stringify(parsed, null, 4);
-          return {
-            success: true,
-            formatted: this.formattedJSON,
-            parsed: parsed
-          };
-        } catch (repairError) {
-          // Si falla incluso después de reparar, devolver el error
-          const match = repairError.message.match(/position (\d+)/);
-          const position = match ? parseInt(match[1]) : -1;
+      row.appendChild(el('span', 'line-number', String(index + 1)));
+      row.appendChild(document.createTextNode(' '.repeat(4 * line.depth)));
 
-          let errorMsg = repairError.message;
-          if (position >= 0) {
-            errorMsg += this.getErrorContext(input, position);
-          }
-
-          return {
-            success: false,
-            error: errorMsg
-          };
-        }
+      for (const token of line.tokens) {
+        row.appendChild(el('span', TOKEN_CLASSES[token.type], token.text));
       }
-    }
-  }
 
-  /**
-   * Repairs common JSON issues to make it parseable
-   */
-  repairJSON(str) {
-    // A. If it's a JS string wrapped in quotes, clean it
-    if ((str.startsWith('"') && str.endsWith('"')) || (str.startsWith("'") && str.endsWith("'"))) {
-      str = str.slice(1, -1).replace(/\\"/g, '"');
-    }
-
-    // B. Remove trailing commas (e.g., {"a":1,} -> {"a":1})
-    str = str.replace(/,\s*([\]}])/g, '$1');
-
-    // C. BALANCE BRACES (Fixes EOF errors)
-    // Count how many open and close braces/brackets exist
-    const openBraces = (str.match(/{/g) || []).length;
-    const closeBraces = (str.match(/}/g) || []).length;
-    const openBrackets = (str.match(/\[/g) || []).length;
-    const closeBrackets = (str.match(/\]/g) || []).length;
-
-    // Add missing closing braces/brackets at the end
-    const missingBraces = openBraces - closeBraces;
-    const missingBrackets = openBrackets - closeBrackets;
-
-    if (missingBraces > 0) {
-      str += '}'.repeat(missingBraces);
-    }
-    if (missingBrackets > 0) {
-      str += ']'.repeat(missingBrackets);
-    }
-
-    return str;
-  }
-
-  /**
-   * Apply syntax highlighting to formatted JSON
-   */
-  syntaxHighlight(json) {
-    const escaped = json
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-
-    const lines = escaped.split('\n');
-    let result = '';
-
-    lines.forEach((line, index) => {
-      const hasToggle = /[{\[]/.test(line);
-      const toggleHTML = hasToggle
-        ? `<span class="toggle toggleIcon" data-line="${index}">▼</span>`
-        : '';
-
-      const lineNumber = `<span class="line-number">${index + 1}</span>`;
-
-      // Highlight keys, values, and literals
-      const highlightedLine = line.replace(
-        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-        (match) => {
-          let cls;
-          if (/^"/.test(match)) {
-            cls = /:$/.test(match) ? 'key' : 'string';
-          } else if (/true|false/.test(match)) {
-            cls = 'boolean';
-          } else if (/null/.test(match)) {
-            cls = 'null';
-          } else {
-            cls = 'number';
-          }
-          return `<span class="${cls}" data-line="${index}">${match}</span>`;
-        }
-      );
-
-      // Highlight commas
-      const withCommas = highlightedLine.replace(/,/g, '<span class="comma">,</span>');
-
-      // Highlight braces and brackets
-      const withBraces = withCommas
-        .replace(/\{/g, '<span class="curly-brace-open">{</span>')
-        .replace(/\}/g, '<span class="curly-brace-close">}</span>')
-        .replace(/\[/g, '<span class="square-brace-open">[</span>')
-        .replace(/\]/g, '<span class="square-brace-close">]</span>');
-
-      // Wrap each line in a div for better collapse control
-      result += `<div class="json-line" data-line-index="${index}">${toggleHTML}${lineNumber}${withBraces}</div>`;
+      this.lineElements.push(row);
+      fragment.appendChild(row);
     });
 
-    return result;
+    this.container.appendChild(fragment);
   }
 
-  /**
-   * Find the start and end indices of a JSON block
-   */
-  findJsonBlock(lineIndex, jsonString) {
-    const lines = jsonString.split('\n');
-    let startIndex = lineIndex;
-    let endIndex = -1;
-    let stack = 0;
+  renderError(error) {
+    this.reset();
 
-    for (let i = startIndex; i < lines.length; i++) {
-      const openMatches = lines[i].match(/[{\[]/g);
-      const closeMatches = lines[i].match(/[}\]]/g);
+    const box = el('div', 'json-error');
+    box.appendChild(el('div', 'json-error-title', '❌ Invalid JSON'));
+    box.appendChild(el('div', null, error.message));
 
-      stack += (openMatches ? openMatches.length : 0);
-      stack -= (closeMatches ? closeMatches.length : 0);
-
-      if (stack === 0) {
-        endIndex = i;
-        break;
-      }
+    if (error.line !== null) {
+      box.appendChild(el('div', 'json-error-location', `Line ${error.line}, column ${error.column}`));
+      box.appendChild(el('pre', 'json-error-context', `${error.context}\n${error.pointer}`));
     }
 
-    return [startIndex, endIndex];
+    const tips = el('div', 'json-error-tips', '💡 Tips:');
+    const list = el('ul');
+    for (const tip of [
+      'Check for missing commas or brackets',
+      'Verify all quotes are properly closed',
+      'Property names must use double quotes'
+    ]) {
+      list.appendChild(el('li', null, tip));
+    }
+    tips.appendChild(list);
+    box.appendChild(tips);
+
+    this.container.appendChild(box);
+  }
+
+  toggle(lineIndex) {
+    if (this.collapsed.has(lineIndex)) {
+      this.collapsed.delete(lineIndex);
+    } else {
+      this.collapsed.add(lineIndex);
+    }
+    this.updateVisibility();
+  }
+
+  setAll(collapsed) {
+    this.collapsed = new Set(
+      collapsed ? this.lines.flatMap((line, i) => (line.end !== -1 ? [i] : [])) : []
+    );
+    this.updateVisibility();
+  }
+
+  /** Single O(n) pass: a line is hidden if it lies inside any collapsed ancestor block */
+  updateVisibility() {
+    let hideUntil = -1;
+
+    this.lines.forEach((line, i) => {
+      const row = this.lineElements[i];
+      const hidden = i <= hideUntil;
+      const isCollapsed = this.collapsed.has(i);
+
+      row.classList.toggle('hidden', hidden);
+      row.classList.toggle('collapsed', isCollapsed);
+
+      const toggle = row.querySelector('.toggleIcon');
+      if (toggle) {
+        toggle.textContent = isCollapsed ? '▶' : '▼';
+        toggle.setAttribute('aria-expanded', String(!isCollapsed));
+        toggle.setAttribute('aria-label', `${isCollapsed ? 'Expand' : 'Collapse'} block at line ${i + 1}`);
+      }
+
+      if (!hidden && isCollapsed) {
+        hideUntil = line.end;
+      }
+    });
   }
 }
+
+const TOKEN_CLASSES = {
+  key: 'key',
+  string: 'string',
+  number: 'number',
+  boolean: 'boolean',
+  null: 'null',
+  colon: 'colon',
+  comma: 'comma',
+  open: 'brace',
+  close: 'brace'
+};
 
 // ============================================
 // CLIPBOARD MANAGER
@@ -320,24 +230,6 @@ class ClipboardManager {
       return false;
     }
   }
-
-  /**
-   * Copy content removing line numbers
-   */
-  async copyFromElement(element) {
-    const clone = element.cloneNode(true);
-
-    // Remove line numbers
-    const lineNumbers = clone.querySelectorAll('.line-number');
-    lineNumbers.forEach(ln => ln.remove());
-
-    // Remove toggle icons
-    const toggles = clone.querySelectorAll('.toggle');
-    toggles.forEach(t => t.remove());
-
-    const text = clone.textContent || clone.innerText;
-    return await this.copy(text);
-  }
 }
 
 // ============================================
@@ -346,7 +238,6 @@ class ClipboardManager {
 class JSONConverterApp {
   constructor() {
     this.toast = new ToastManager();
-    this.formatter = new JSONFormatter();
     this.clipboard = new ClipboardManager(this.toast);
 
     this.elements = {
@@ -360,6 +251,9 @@ class JSONConverterApp {
       expandAllBtn: document.getElementById('expand_all')
     };
 
+    this.renderer = new JSONRenderer(this.elements.outputPre);
+    this.formatted = '';
+
     this.init();
   }
 
@@ -372,7 +266,7 @@ class JSONConverterApp {
     // Convert button
     this.elements.convertBtn.addEventListener('click', () => this.handleConvert());
 
-    // Enter key in textarea
+    // Ctrl+Enter in textarea
     this.elements.inputTextarea.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.key === 'Enter') {
         this.handleConvert();
@@ -387,13 +281,14 @@ class JSONConverterApp {
     this.elements.clearInputBtn.addEventListener('click', () => this.handleClear());
 
     // Collapse/Expand buttons
-    this.elements.collapseAllBtn.addEventListener('click', () => this.handleCollapseAll());
-    this.elements.expandAllBtn.addEventListener('click', () => this.handleExpandAll());
+    this.elements.collapseAllBtn.addEventListener('click', () => this.renderer.setAll(true));
+    this.elements.expandAllBtn.addEventListener('click', () => this.renderer.setAll(false));
 
     // Toggle icons (event delegation)
-    document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('toggleIcon')) {
-        this.handleToggle(e.target);
+    this.elements.outputPre.addEventListener('click', (e) => {
+      const toggle = e.target.closest('.toggleIcon');
+      if (toggle) {
+        this.renderer.toggle(Number(toggle.dataset.line));
       }
     });
   }
@@ -412,22 +307,34 @@ class JSONConverterApp {
 
     // Use setTimeout to allow UI to update
     setTimeout(() => {
-      const result = this.formatter.format(input);
+      try {
+        const result = formatJSON(input);
 
-      if (result.success) {
-        const highlighted = this.formatter.syntaxHighlight(result.formatted);
-        this.elements.outputPre.innerHTML = highlighted;
-        this.toast.success('JSON converted successfully!');
-      } else {
-        // Show error in output for better visibility
-        const errorDisplay = `<div style="color: #f56565; padding: 16px; font-family: monospace; white-space: pre-wrap; line-height: 1.6;">❌ Invalid JSON\n\n${result.error}\n\n💡 Tips:\n• Check for missing commas or brackets\n• Verify all quotes are properly closed\n• Use a JSON validator if needed</div>`;
-        this.elements.outputPre.innerHTML = errorDisplay;
-        this.toast.error('Invalid JSON - Check output for details', 6000);
+        if (result.success) {
+          this.formatted = result.formatted;
+          this.renderer.render(result);
+
+          if (result.warnings.length) {
+            this.toast.warning('JSON repaired - review the changes before using it', 6000);
+          } else {
+            this.toast.success('JSON converted successfully!');
+          }
+        } else {
+          this.formatted = '';
+          this.renderer.renderError(result.error);
+          this.toast.error('Invalid JSON - Check output for details', 6000);
+        }
+      } catch (error) {
+        // e.g. output too large to build as a string
+        this.formatted = '';
+        this.renderer.reset();
+        this.toast.error('Could not process this input');
+        console.error('Format error:', error);
+      } finally {
+        // Remove loading state
+        this.elements.convertBtn.classList.remove('loading');
+        this.elements.convertBtn.disabled = false;
       }
-
-      // Remove loading state
-      this.elements.convertBtn.classList.remove('loading');
-      this.elements.convertBtn.disabled = false;
     }, 100);
   }
 
@@ -441,8 +348,8 @@ class JSONConverterApp {
   }
 
   handleCopyOutput() {
-    if (this.elements.outputPre.textContent) {
-      this.clipboard.copyFromElement(this.elements.outputPre);
+    if (this.formatted) {
+      this.clipboard.copy(this.formatted);
     } else {
       this.toast.warning('No output to copy');
     }
@@ -450,57 +357,10 @@ class JSONConverterApp {
 
   handleClear() {
     this.elements.inputTextarea.value = '';
-    this.elements.outputPre.innerHTML = '';
+    this.formatted = '';
+    this.renderer.reset();
     this.elements.inputTextarea.focus();
     this.toast.success('Cleared!');
-  }
-
-  handleToggle(toggleIcon) {
-    const lineIndex = parseInt(toggleIcon.getAttribute('data-line'));
-    const currentIcon = toggleIcon.textContent;
-    const isCollapsed = currentIcon === '▶';
-
-    // Toggle icon
-    toggleIcon.textContent = isCollapsed ? '▼' : '▶';
-
-    if (!this.formatter.formattedJSON) return;
-
-    const [startIndex, endIndex] = this.formatter.findJsonBlock(
-      lineIndex,
-      this.formatter.formattedJSON
-    );
-
-    // Toggle visibility of entire lines using the json-line containers
-    for (let i = startIndex + 1; i <= endIndex; i++) {
-      const lineContainer = document.querySelector(`.json-line[data-line-index="${i}"]`);
-      if (lineContainer) {
-        if (isCollapsed) {
-          // Expandir: mostrar las líneas
-          lineContainer.classList.remove('hidden');
-        } else {
-          // Colapsar: ocultar las líneas
-          lineContainer.classList.add('hidden');
-        }
-      }
-    }
-  }
-
-  handleCollapseAll() {
-    const toggles = document.querySelectorAll('.toggleIcon');
-    toggles.forEach(toggle => {
-      if (toggle.textContent === '▼') {
-        toggle.click();
-      }
-    });
-  }
-
-  handleExpandAll() {
-    const toggles = document.querySelectorAll('.toggleIcon');
-    toggles.forEach(toggle => {
-      if (toggle.textContent === '▶') {
-        toggle.click();
-      }
-    });
   }
 }
 
@@ -508,12 +368,5 @@ class JSONConverterApp {
 // INITIALIZE APP
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
-  const app = new JSONConverterApp();
-
-
-  // Add global reference for debugging (optional)
-  window.jsonConverterApp = app;
-
-  console.log('%cJSON Converter Ready! 🚀', 'color: #667eea; font-size: 16px; font-weight: bold;');
+  new JSONConverterApp();
 });
-
