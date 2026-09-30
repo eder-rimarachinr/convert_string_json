@@ -5,7 +5,7 @@
  */
 (function () {
   var STORAGE_KEY = 'theme';
-  var THEME_COLORS = { light: '#e8ecf0', dark: '#0e1621' };
+  var THEME_COLORS = { light: '#e8ecf0', dark: '#1a2029' };
   var root = document.documentElement;
 
   function readSaved() {

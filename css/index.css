@@ -58,39 +58,42 @@
   --transition-slow: 0.5s ease;
 }
 
-/* Dark "ink" palette (opt-in) */
+/*
+ * Dark "dimmed slate" palette (opt-in): same rules as the light one, no pure black
+ * and desaturated colors, so text sits at ~11:1 instead of glaring white on black.
+ */
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #0e1621;
-  --surface: #152131;
-  --well: #0a111a;
-  --line: #22324a;
-  --line-strong: #2e4360;
+  --bg: #1a2029;
+  --surface: #222b37;
+  --well: #1d2530;          /* editors: a touch darker than panels, never black */
+  --line: #334052;
+  --line-strong: #44536a;
 
-  --text: #e4ebf2;
-  --muted: #93a4b8;
+  --text: #d3dbe4;
+  --muted: #97a3b3;
 
-  --accent: #3dd6c6;
-  --accent-strong: #6ee6d9;
-  --accent-fill: #3dd6c6;
-  --accent-fill-hover: #6ee6d9;
-  --on-accent: #04201d;
+  --accent: #6cc9bd;
+  --accent-strong: #8ad6cc;
+  --accent-fill: #5fbfb3;
+  --accent-fill-hover: #74cabf;
+  --on-accent: #0f2a27;
 
-  --success: #5fd38d;
-  --error: #ff7a85;
-  --warning: #f5b64a;
+  --success: #72c795;
+  --error: #ef8a94;
+  --warning: #dfb35e;
 
-  --syn-key: #7cc4fa;
-  --syn-string: #a6dca0;
-  --syn-number: #f5a97f;
-  --syn-boolean: #c3a6ff;
-  --syn-null: #8a9bb0;
+  --syn-key: #89bbe9;
+  --syn-string: #a3cf9d;
+  --syn-number: #e3a882;
+  --syn-boolean: #b8a3ea;
+  --syn-null: #8f9bab;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 18px 40px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 2px rgba(8, 12, 18, 0.25);
+  --shadow-md: 0 4px 10px rgba(8, 12, 18, 0.25);
+  --shadow-lg: 0 8px 20px rgba(8, 12, 18, 0.28);
+  --shadow-xl: 0 14px 32px rgba(8, 12, 18, 0.32);
 }
 
 html {
