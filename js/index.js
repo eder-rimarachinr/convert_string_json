@@ -7,7 +7,7 @@
  * Never use innerHTML here.
  */
 
-import { formatJSON } from './json-core.js';
+import { formatJSON } from './json-core.js?v=20261001';
 
 // Small DOM helper: el('span', 'cls', 'text')
 function el(tag, className, text) {
